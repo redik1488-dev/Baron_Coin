@@ -6,6 +6,12 @@ import Image from 'next/image';
 import { ArrowLeft, Search, Lock, Download, X } from 'lucide-react';
 import CoinModal from './CoinModal';
 
+export const getSafeString = (val: string | { text?: string; [key: string]: any } | undefined | null): string => {
+  if (!val) return '';
+  if (typeof val === 'object' && 'text' in val) return val.text || '';
+  return String(val);
+};
+
 interface CoinGridProps {
   coins: CoinType[];
 }
@@ -17,8 +23,8 @@ const RULERS = [
   { id: 'Карл I (1916–1918)', name: 'Charles I (Karl I)', reign: '1916-1918', img: '/rulers/karl_i.png' },
 ];
 
-function extractCurrency(title: string): string {
-  const t = title.toLowerCase();
+function extractCurrency(title: string | any): string {
+  const t = getSafeString(title).toLowerCase();
   if (t.includes('kreuzer') || t.includes('kreutzer')) return 'Kreuzer';
   if (t.includes('heller')) return 'Heller';
   if (t.includes('filler') || t.includes('fillér')) return 'Filler';
@@ -33,13 +39,14 @@ function extractCurrency(title: string): string {
   return 'Інше';
 }
 
-function parseNominalValue(title: string): number {
+function parseNominalValue(title: string | any): number {
+  const s = getSafeString(title);
   // Намагаємось витягнути числа або дроби типу 1/4, 1/2 з початку рядка
-  const matchFraction = title.match(/^(\d+)\/(\d+)/);
+  const matchFraction = s.match(/^(\d+)\/(\d+)/);
   if (matchFraction) {
     return parseInt(matchFraction[1]) / parseInt(matchFraction[2]);
   }
-  const matchNum = title.match(/^(\d+[\.,]?\d*)/);
+  const matchNum = s.match(/^(\d+[\.,]?\d*)/);
   if (matchNum) {
     return parseFloat(matchNum[1].replace(',', '.'));
   }
@@ -68,15 +75,15 @@ export default function CoinGrid({ coins }: CoinGridProps) {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(c => 
-        (c.title || '').toLowerCase().includes(q) ||
-        (c.composition || '').toLowerCase().includes(q)
+        getSafeString(c.title).toLowerCase().includes(q) ||
+        getSafeString(c.composition).toLowerCase().includes(q)
       );
     }
 
     const groups: Record<string, CoinType[]> = {};
 
     result.forEach(coin => {
-      const currency = extractCurrency(coin.title || '');
+      const currency = extractCurrency(coin.title);
       if (!groups[currency]) groups[currency] = [];
       groups[currency].push(coin);
     });
@@ -85,8 +92,8 @@ export default function CoinGrid({ coins }: CoinGridProps) {
     for (const key in groups) {
       groups[key].sort((a, b) => {
         // Спочатку пріоритет числовому значенню (якщо воно є від Numista)
-        let valA = typeof a.value?.numeric === 'number' ? a.value.numeric : parseNominalValue(a.title || '');
-        let valB = typeof b.value?.numeric === 'number' ? b.value.numeric : parseNominalValue(b.title || '');
+        let valA = typeof a.value?.numeric === 'number' ? a.value.numeric : parseNominalValue(a.title);
+        let valB = typeof b.value?.numeric === 'number' ? b.value.numeric : parseNominalValue(b.title);
         
         if (valA !== valB) return valA - valB;
         // Якщо номінали однакові, сортуємо за роком
@@ -110,8 +117,8 @@ export default function CoinGrid({ coins }: CoinGridProps) {
       text += `=== ${currency.toUpperCase()} ===\n`;
       groups[currency].forEach(coin => {
         const yearStr = coin.min_year === coin.max_year ? coin.min_year : `${coin.min_year}-${coin.max_year}`;
-        const material = coin.composition || 'Невідомий метал';
-        text += `<strong>${coin.title}</strong> - ${material} - ${yearStr}\n`;
+        const material = getSafeString(coin.composition) || 'Невідомий метал';
+        text += `<strong>${getSafeString(coin.title)}</strong> - ${material} - ${yearStr}\n`;
       });
       text += `\n`;
     });
@@ -296,10 +303,10 @@ export default function CoinGrid({ coins }: CoinGridProps) {
                       {/* Coin Info */}
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-stone-800 text-base md:text-lg truncate">
-                          {coin.title}
+                          {getSafeString(coin.title)}
                         </h4>
                         <p className="text-sm text-stone-500 truncate">
-                          <span className="font-medium text-stone-600">{coin.composition || 'Невідомий метал'}</span> • {coin.min_year} {coin.max_year && coin.max_year !== coin.min_year ? `- ${coin.max_year}` : ''}
+                          <span className="font-medium text-stone-600">{getSafeString(coin.composition) || 'Невідомий метал'}</span> • {coin.min_year} {coin.max_year && coin.max_year !== coin.min_year ? `- ${coin.max_year}` : ''}
                         </p>
                       </div>
 
