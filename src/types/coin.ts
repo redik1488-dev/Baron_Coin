@@ -17,7 +17,7 @@ export interface CoinType {
     name: string;
     code?: string;
   };
-  composition?: string;
+  composition?: string | { text?: string; id?: number };
   type?: string;
   series?: string;
   image?: CoinImage;
