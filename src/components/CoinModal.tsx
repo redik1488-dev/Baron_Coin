@@ -5,6 +5,12 @@ import { CoinType } from '@/types/coin';
 import Image from 'next/image';
 import { X, Calendar, Droplets, Weight, Expand, Layers } from 'lucide-react';
 
+const getSafeString = (val: any): string => {
+  if (!val) return '';
+  if (typeof val === 'object' && 'text' in val) return val.text || '';
+  return String(val);
+};
+
 interface CoinModalProps {
   coin: CoinType | null;
   onClose: () => void;
@@ -74,7 +80,7 @@ export default function CoinModal({ coin, onClose }: CoinModalProps) {
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at center, #fbbf24 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
           
           <h2 className="text-2xl sm:text-3xl font-cinzel text-imperial-gold font-bold mb-6 relative z-10 tracking-widest uppercase">
-            {coin.title}
+            {getSafeString(coin.title)}
           </h2>
 
           {(obverseSrc || reverseSrc) && (
@@ -107,7 +113,9 @@ export default function CoinModal({ coin, onClose }: CoinModalProps) {
             <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-amber-200 shadow-sm text-center">
               <Droplets className="w-5 h-5 mx-auto text-amber-700 mb-2" />
               <p className="text-xs text-stone-500 uppercase tracking-wider font-bold">Сплав</p>
-              <p className="font-bold text-stone-800 text-sm mt-1 line-clamp-2" title={coin.composition}>{coin.composition || '—'}</p>
+              <p className="font-bold text-stone-800 text-sm mt-1 line-clamp-2" title={getSafeString(coin.composition)}>
+                {getSafeString(coin.composition) || '—'}
+              </p>
             </div>
             
             <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-amber-200 shadow-sm text-center">
@@ -149,7 +157,7 @@ export default function CoinModal({ coin, onClose }: CoinModalProps) {
                       <tr key={issue.id || idx} className="hover:bg-amber-50 transition-colors">
                         <td className="px-6 py-3 font-semibold text-stone-800 text-base">
                           {issue.year || issue.gregorian_year} 
-                          {issue.comment && <span className="text-xs text-stone-400 font-normal ml-2 block sm:inline">{issue.comment}</span>}
+                          {issue.comment && <span className="text-xs text-stone-400 font-normal ml-2 block sm:inline">{getSafeString(issue.comment)}</span>}
                         </td>
                         <td className="px-6 py-3 text-right font-medium text-amber-800">
                           {issue.mintage ? issue.mintage.toLocaleString('uk-UA') : 'Невідомо'}
