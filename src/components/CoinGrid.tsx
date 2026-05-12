@@ -10,12 +10,37 @@ interface CoinGridProps {
   coins: CoinType[];
 }
 
-const RULERS = [
-  { id: 'Франц II (1792–1835)', name: 'Francis II', reign: '1792-1835', img: '/rulers/francis_ii.png' },
-  { id: 'Фердинанд I (1835–1848)', name: 'Ferdinand I', reign: '1835-1848', img: '/rulers/ferdinand_i.png' },
-  { id: 'Франц Йосиф I (1848–1916)', name: 'Franz Joseph I', reign: '1848-1916', img: '/rulers/franz_joseph.png' },
-  { id: 'Карл I (1916–1918)', name: 'Charles I (Karl I)', reign: '1916-1918', img: '/rulers/karl_i.png' },
+interface RulerDef {
+  id: string;
+  name: string;
+  reign: string;
+  img: string;
+}
+
+const RULERS_AH: RulerDef[] = [
+  { id: 'Франц II (1792–1835)',        name: 'Francis II',       reign: '1792-1835', img: '/rulers/francis_ii.png' },
+  { id: 'Фердинанд I (1835–1848)',     name: 'Ferdinand I',      reign: '1835-1848', img: '/rulers/ferdinand_i.png' },
+  { id: 'Франц Йосиф I (1848–1916)',   name: 'Franz Joseph I',   reign: '1848-1916', img: '/rulers/franz_joseph.png' },
+  { id: 'Карл I (1916–1918)',          name: 'Charles I',        reign: '1916-1918', img: '/rulers/karl_i.png' },
 ];
+
+const RULERS_HABSBURG: RulerDef[] = [
+  { id: 'Фердинанд I Габсбург (1526–1564)', name: 'Ferdinand I',   reign: '1526-1564', img: '/rulers/ferdinand_i.png' },
+  { id: 'Максиміліан II (1564–1576)',       name: 'Maximilian II', reign: '1564-1576', img: '/rulers/rudolf_ii.png' },
+  { id: 'Рудольф II (1576–1612)',           name: 'Rudolf II',     reign: '1576-1612', img: '/rulers/rudolf_ii.png' },
+  { id: 'Матіас (1612–1619)',               name: 'Matthias',      reign: '1612-1619', img: '/rulers/leopold_i_habsburg.png' },
+  { id: 'Фердинанд II (1619–1637)',         name: 'Ferdinand II',  reign: '1619-1637', img: '/rulers/ferdinand_i.png' },
+  { id: 'Фердинанд III (1637–1657)',        name: 'Ferdinand III', reign: '1637-1657', img: '/rulers/ferdinand_i.png' },
+  { id: 'Леопольд I (1657–1705)',           name: 'Leopold I',     reign: '1657-1705', img: '/rulers/leopold_i_habsburg.png' },
+  { id: 'Йосип I (1705–1711)',              name: 'Joseph I',      reign: '1705-1711', img: '/rulers/charles_vi.png' },
+  { id: 'Карл VI (1711–1740)',              name: 'Charles VI',    reign: '1711-1740', img: '/rulers/charles_vi.png' },
+  { id: 'Марія Терезія (1740–1780)',        name: 'Maria Theresa', reign: '1740-1780', img: '/rulers/maria_theresa.png' },
+  { id: 'Йосип II (1780–1790)',             name: 'Joseph II',     reign: '1780-1790', img: '/rulers/joseph_ii.png' },
+  { id: 'Леопольд II (1790–1792)',          name: 'Leopold II',    reign: '1790-1792', img: '/rulers/leopold_ii_habsburg.png' },
+];
+
+const ALL_RULERS = [...RULERS_HABSBURG, ...RULERS_AH];
+
 
 function extractCurrency(title: string): string {
   const t = title.toLowerCase();
@@ -115,63 +140,76 @@ export default function CoinGrid({ coins }: CoinGridProps) {
   };
 
   if (!selectedRuler) {
-    return (
-      <div className="py-8">
-        <h2 className="text-center text-3xl font-cinzel text-amber-900 mb-12 uppercase tracking-widest font-bold">
-          Tsars and Emperors
-        </h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-          {RULERS.map((ruler) => {
-            const count    = rulerCounts[ruler.id] || 0;
-            const isLocked = count === 0;
-
-            return (
-              <div
-                key={ruler.id}
-                onClick={() => !isLocked && setSelectedRuler(ruler.id)}
-                className={`flex flex-col items-center group ${isLocked ? 'cursor-not-allowed opacity-60 grayscale' : 'cursor-pointer'}`}
-              >
-                <div className="relative w-40 h-48 mb-4 transition-transform duration-500 group-hover:scale-105">
-                  <div className="absolute inset-0 rounded-t-full rounded-b-full border-[6px] border-amber-600/30 overflow-hidden shadow-2xl">
-                    <div className="absolute inset-0 rounded-t-full rounded-b-full border-4 border-amber-400 overflow-hidden m-1 bg-stone-800">
-                      <Image
-                        src={ruler.img}
-                        alt={ruler.name}
-                        fill
-                        className="object-cover object-[center_20%]"
-                      />
-                    </div>
-                  </div>
-
-                  {isLocked && (
-                    <div className="absolute top-0 right-0 bg-stone-800 text-stone-200 p-2 rounded-full shadow-lg border border-stone-600 z-10">
-                      <Lock size={16} />
-                    </div>
-                  )}
-
-                  {!isLocked && (
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-amber-800 text-amber-100 text-xs font-bold px-3 py-1 rounded-full border border-amber-400 shadow-md whitespace-nowrap">
-                      {count} Монет
-                    </div>
-                  )}
-                </div>
-
-                <h3 className={`font-cinzel text-lg font-bold text-center mt-2 ${isLocked ? 'text-stone-500' : 'text-amber-600'}`}>
-                  {ruler.name}
-                </h3>
-                <p className="text-xs text-stone-500 font-medium">
-                  {ruler.reign}
-                </p>
+    const RulerCard = ({ ruler }: { ruler: RulerDef }) => {
+      const count    = rulerCounts[ruler.id] || 0;
+      const isLocked = count === 0;
+      return (
+        <div
+          onClick={() => !isLocked && setSelectedRuler(ruler.id)}
+          className={`flex flex-col items-center group ${isLocked ? 'cursor-not-allowed opacity-50 grayscale' : 'cursor-pointer'}`}
+        >
+          <div className="relative w-28 h-36 md:w-32 md:h-40 mb-3 transition-transform duration-500 group-hover:scale-105">
+            <div className="absolute inset-0 rounded-t-full rounded-b-full border-[5px] border-amber-600/30 overflow-hidden shadow-2xl">
+              <div className="absolute inset-0 rounded-t-full rounded-b-full border-4 border-amber-400 overflow-hidden m-1 bg-stone-800">
+                <Image src={ruler.img} alt={ruler.name} fill className="object-cover object-[center_15%]" />
               </div>
-            );
-          })}
+            </div>
+            {isLocked && (
+              <div className="absolute top-0 right-0 bg-stone-800 text-stone-200 p-1.5 rounded-full shadow-lg border border-stone-600 z-10">
+                <Lock size={13} />
+              </div>
+            )}
+            {!isLocked && (
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-800 text-amber-100 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400 shadow-md whitespace-nowrap">
+                {count} монет
+              </div>
+            )}
+          </div>
+          <h3 className={`font-cinzel text-sm font-bold text-center mt-1 ${isLocked ? 'text-stone-400' : 'text-amber-700'}`}>
+            {ruler.name}
+          </h3>
+          <p className="text-[10px] text-stone-400 font-medium">{ruler.reign}</p>
         </div>
+      );
+    };
+
+    return (
+      <div className="py-8 space-y-16">
+        {/* === Австрійська монархія Габсбургів === */}
+        <section>
+          <div className="text-center mb-10">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 mb-1">Österreich</p>
+            <h2 className="text-2xl md:text-3xl font-cinzel text-amber-900 uppercase tracking-widest font-bold">
+              Austrian Monarchy
+            </h2>
+            <p className="text-stone-500 text-sm mt-1">Habsburg Archdukes & Holy Roman Emperors</p>
+            <div className="h-px w-48 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-4" />
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6 max-w-5xl mx-auto">
+            {RULERS_HABSBURG.map(ruler => <RulerCard key={ruler.id} ruler={ruler} />)}
+          </div>
+        </section>
+
+        {/* === Австро-Угорська монархія === */}
+        <section>
+          <div className="text-center mb-10">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 mb-1">Österreich-Ungarn</p>
+            <h2 className="text-2xl md:text-3xl font-cinzel text-amber-900 uppercase tracking-widest font-bold">
+              Austro-Hungarian Empire
+            </h2>
+            <p className="text-stone-500 text-sm mt-1">Emperors of Austria & Kings of Hungary</p>
+            <div className="h-px w-48 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-4" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            {RULERS_AH.map(ruler => <RulerCard key={ruler.id} ruler={ruler} />)}
+          </div>
+        </section>
       </div>
     );
   }
 
-  const activeRuler = RULERS.find(r => r.id === selectedRuler);
+  const activeRuler = ALL_RULERS.find(r => r.id === selectedRuler);
+
   const groupKeys   = Object.keys(groupedAndFilteredCoins).sort();
   const totalCoins  = groupKeys.reduce((acc, key) => acc + groupedAndFilteredCoins[key].length, 0);
 

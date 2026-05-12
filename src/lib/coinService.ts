@@ -18,25 +18,43 @@ const CACHE_TTL_MS     = 7 * 24 * 60 * 60 * 1000; // 7 днів
 const AH_ISSUERS = new Set(['autriche', 'autriche-habsbourg', 'hongrie', 'hungary']);
 
 const AH_QUERIES: Array<{ q: string; count: number }> = [
-  { q: 'Francis II 1800', count: 50 },
-  { q: 'Franz II thaler', count: 50 },
-  { q: 'Francis II kreuzer', count: 50 },
-  { q: 'Ferdinand I 1840', count: 50 },
-  { q: 'Ferdinand I 1845', count: 50 },
-  { q: 'Franz Joseph florin',   count: 50 },
-  { q: 'kreuzer Franz Joseph',  count: 50 },
-  { q: 'corona Austria',        count: 50 },
-  { q: 'heller Austria',        count: 50 },
-  { q: 'filler Hungary',        count: 50 },
-  { q: 'ducat Franz Joseph',    count: 50 },
-  { q: '10 heller 1916',        count: 50 },
-  { q: '20 heller 1916',        count: 50 },
-  { q: 'Charles I filler',      count: 50 },
+  // === Австро-Угорська монархія (1792–1918) ===
+  { q: 'Francis II 1800',      count: 50 },
+  { q: 'Franz II thaler',      count: 50 },
+  { q: 'Francis II kreuzer',   count: 50 },
+  { q: 'Ferdinand I 1840',     count: 50 },
+  { q: 'Ferdinand I 1845',     count: 50 },
+  { q: 'Franz Joseph florin',  count: 50 },
+  { q: 'kreuzer Franz Joseph', count: 50 },
+  { q: 'corona Austria',       count: 50 },
+  { q: 'heller Austria',       count: 50 },
+  { q: 'filler Hungary',       count: 50 },
+  { q: 'ducat Franz Joseph',   count: 50 },
+  { q: '10 heller 1916',       count: 50 },
+  { q: '20 heller 1916',       count: 50 },
+  { q: 'Charles I filler',     count: 50 },
+  // === Австрійська монархія Габсбургів (1526–1792) ===
+  { q: 'Maria Theresa thaler', count: 50 },
+  { q: 'Maria Theresa kreuzer',count: 50 },
+  { q: 'Leopold I Austria',    count: 50 },
+  { q: 'Leopold I thaler',     count: 50 },
+  { q: 'Charles VI Austria',   count: 50 },
+  { q: 'Karl VI Austria',      count: 50 },
+  { q: 'Joseph II Austria',    count: 50 },
+  { q: 'Joseph II kreuzer',    count: 50 },
+  { q: 'Leopold II Austria',   count: 50 },
+  { q: 'Rudolf II Austria',    count: 50 },
+  { q: 'Rudolf II thaler',     count: 50 },
+  { q: 'Ferdinand I Habsburg', count: 50 },
+  { q: 'Maximilian II Austria',count: 50 },
+  { q: 'Ferdinand II Austria', count: 50 },
+  { q: 'Ferdinand III Austria',count: 50 },
+  { q: 'Joseph I Austria',     count: 50 },
 ];
 
 const COL_COINS        = 'coins';
 const COL_CATALOG_META = 'coin_catalog_meta';
-const CATALOG_KEY      = 'austro-hungarian-rulers-v4';
+const CATALOG_KEY      = 'habsburg-austria-full-v1'; // оновлений ключ для розширеного каталогу
 
 // --- Утиліти ---
 
@@ -101,17 +119,57 @@ function normalizeRawCoin(raw: NumistaRawCoin): Omit<CoinType, 'rarity' | 'ruler
 
 function determineRuler(year: number, title: string): string {
   const t = title.toLowerCase();
-  if (t.includes('karl') || t.includes('charles') || (year >= 1916 && year <= 1918)) {
+
+  // === Австро-Угорська монархія ===
+  if (t.includes('karl i') || t.includes('charles i') || (year >= 1916 && year <= 1918)) {
     return 'Карл I (1916–1918)';
   }
   if (t.includes('franz joseph') || t.includes('francis joseph') || (year >= 1848 && year <= 1916)) {
     return 'Франц Йосиф I (1848–1916)';
   }
-  if (t.includes('ferdinand i') || (year >= 1835 && year < 1848)) {
+  if ((t.includes('ferdinand') && year >= 1835 && year < 1848)) {
     return 'Фердинанд I (1835–1848)';
   }
   if (t.includes('franz ii') || t.includes('francis ii') || (year >= 1792 && year < 1835)) {
     return 'Франц II (1792–1835)';
+  }
+
+  // === Австрійська монархія Габсбургів ===
+  if (t.includes('leopold ii') || (year >= 1790 && year < 1792)) {
+    return 'Леопольд II (1790–1792)';
+  }
+  if (t.includes('joseph ii') || (year >= 1780 && year < 1790)) {
+    return 'Йосип II (1780–1790)';
+  }
+  if (t.includes('maria theresa') || t.includes('maria theresia') || (year >= 1740 && year < 1780)) {
+    return 'Марія Терезія (1740–1780)';
+  }
+  if (t.includes('charles vi') || t.includes('karl vi') || (year >= 1711 && year < 1740)) {
+    return 'Карл VI (1711–1740)';
+  }
+  if (t.includes('joseph i') || (year >= 1705 && year < 1711)) {
+    return 'Йосип I (1705–1711)';
+  }
+  if (t.includes('leopold i') || (year >= 1657 && year < 1705)) {
+    return 'Леопольд I (1657–1705)';
+  }
+  if (t.includes('ferdinand iii') || (year >= 1637 && year < 1657)) {
+    return 'Фердинанд III (1637–1657)';
+  }
+  if (t.includes('ferdinand ii') || (year >= 1619 && year < 1637)) {
+    return 'Фердинанд II (1619–1637)';
+  }
+  if (t.includes('matthias') || (year >= 1612 && year < 1619)) {
+    return 'Матіас (1612–1619)';
+  }
+  if (t.includes('rudolf ii') || (year >= 1576 && year < 1612)) {
+    return 'Рудольф II (1576–1612)';
+  }
+  if (t.includes('maximilian') || (year >= 1564 && year < 1576)) {
+    return 'Максиміліан II (1564–1576)';
+  }
+  if (t.includes('ferdinand i') || (year >= 1526 && year < 1564)) {
+    return 'Фердинанд I Габсбург (1526–1564)';
   }
   return 'Інші / Невідомо';
 }
@@ -250,7 +308,7 @@ async function fetchFromNumista(): Promise<CoinType[]> {
             issuerCode.includes('hongrie') ||
             issuerCode.includes('hungary');
 
-          const isCorrectPeriod = year >= 1792 && year <= 1918;
+          const isCorrectPeriod = year >= 1526 && year <= 1918;
           const isCoinCategory  = raw.category === 'coin';
 
           if (!allCoinsMap.has(id) && isAH && isCorrectPeriod && isCoinCategory) {
