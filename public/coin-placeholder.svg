@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <circle cx="100" cy="100" r="90" stroke="#d4aa3a" stroke-width="3" fill="#fdf8f0"/>
+  <circle cx="100" cy="100" r="75" stroke="#d4aa3a" stroke-width="1.5" stroke-dasharray="6 4" fill="none"/>
+  <circle cx="100" cy="100" r="55" stroke="#b8922a" stroke-width="1" fill="#f9eedb"/>
+  <text x="100" y="105" text-anchor="middle" font-family="Georgia, serif" font-size="32" fill="#b8922a">☆</text>
+  <text x="100" y="130" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="#8b6914" letter-spacing="2">МОНЕТА</text>
+</svg>
