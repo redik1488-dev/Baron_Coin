@@ -153,7 +153,13 @@ export default function CoinCard({ coin, onClick, index = 0 }: CoinCardProps) {
           {/* Metal/Composition */}
           <div className="flex items-center gap-2 text-sm text-stone-600">
             <Layers size={13} className="text-amber-600 shrink-0" />
-            <span className="line-clamp-1" title={metalInfo}>{metalInfo}</span>
+            {(() => {
+              const displayMetalInfo = typeof metalInfo === 'object' ? (metalInfo as any)?.text : metalInfo;
+              const finalMetalText = displayMetalInfo || "Невідомий метал";
+              return (
+                <span className="line-clamp-1" title={finalMetalText}>{finalMetalText}</span>
+              );
+            })()}
           </div>
 
           {/* Series/Issuer */}
