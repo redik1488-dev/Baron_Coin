@@ -25,7 +25,7 @@ const RULERS_AH: RulerDef[] = [
 ];
 
 const RULERS_HABSBURG: RulerDef[] = [
-  { id: 'Фердинанд I Габсбург (1526–1564)', name: 'Ferdinand I',   reign: '1526-1564', img: '/rulers/ferdinand_i.png' },
+  { id: 'Фердинанд I Габсбург (1526–1564)', name: 'Ferdinand I',   reign: '1526-1564', img: '/rulers/ferdinand_i_habsburg.png' },
   { id: 'Максиміліан II (1564–1576)',       name: 'Maximilian II', reign: '1564-1576', img: '/rulers/maximilian_ii.png' },
   { id: 'Рудольф II (1576–1612)',           name: 'Rudolf II',     reign: '1576-1612', img: '/rulers/rudolf_ii.png' },
   { id: 'Матіас (1612–1619)',               name: 'Matthias',      reign: '1612-1619', img: '/rulers/matthias.png' },
