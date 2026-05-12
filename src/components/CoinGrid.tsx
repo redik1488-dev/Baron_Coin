@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { CoinType } from '@/types/coin';
 import Image from 'next/image';
-import { ArrowLeft, Search, Lock, Download } from 'lucide-react';
+import { ArrowLeft, Search, Lock, Download, X } from 'lucide-react';
 import CoinModal from './CoinModal';
 
 interface CoinGridProps {
