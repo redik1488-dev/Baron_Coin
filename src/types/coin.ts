@@ -10,7 +10,7 @@ export interface CoinImage {
 
 export interface CoinType {
   id: string | number;
-  title: string;
+  title: string | { text?: string; [key: string]: any };
   min_year?: number;
   max_year?: number;
   issuer?: {
@@ -18,13 +18,13 @@ export interface CoinType {
     code?: string;
   };
   composition?: string | { text?: string; id?: number };
-  type?: string;
-  series?: string;
+  type?: string | { text?: string; [key: string]: any };
+  series?: string | { text?: string; [key: string]: any };
   image?: CoinImage;
   obverse_thumbnail?: string;
   reverse_thumbnail?: string;
   value?: {
-    text?: string;
+    text?: string | { text?: string; [key: string]: any };
     numeric?: number;
     currency?: {
       name: string;
@@ -32,7 +32,8 @@ export interface CoinType {
   };
   weight?: number;
   size?: number;
-  shape?: string;
+  shape?: string | { text?: string; [key: string]: any };
+  edge?: string | { text?: string; [key: string]: any };
   demonetized?: boolean;
   tags?: string[];
   // Derived fields

@@ -21,7 +21,7 @@ interface Issue {
   year: number;
   gregorian_year: number;
   mintage: number | null;
-  comment?: string;
+  comment?: string | { text?: string; [key: string]: any };
 }
 
 export default function CoinModal({ coin, onClose }: CoinModalProps) {
@@ -129,6 +129,28 @@ export default function CoinModal({ coin, onClose }: CoinModalProps) {
               <p className="text-xs text-stone-500 uppercase tracking-wider font-bold">Розмір</p>
               <p className="font-bold text-stone-800 text-sm mt-1">{coin.size ? `${coin.size} мм` : '—'}</p>
             </div>
+          </div>
+
+          {/* Additional details if available */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {coin.shape && (
+              <div className="bg-white/60 p-4 rounded-xl border border-amber-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold">S</div>
+                <div>
+                  <p className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter">Форма</p>
+                  <p className="text-sm font-semibold text-stone-700">{getSafeString(coin.shape)}</p>
+                </div>
+              </div>
+            )}
+            {coin.edge && (
+              <div className="bg-white/60 p-4 rounded-xl border border-amber-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold">E</div>
+                <div>
+                  <p className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter">Гурт</p>
+                  <p className="text-sm font-semibold text-stone-700">{getSafeString(coin.edge)}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Issues (Years) List */}
