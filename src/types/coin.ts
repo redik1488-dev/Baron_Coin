@@ -38,6 +38,7 @@ export interface CoinType {
   // Derived fields
   rarity?: Rarity;
   ruler?: string;
+  category?: string;
   cachedAt?: number;
 }
 
