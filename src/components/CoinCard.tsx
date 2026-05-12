@@ -31,29 +31,23 @@ export default function CoinCard({ coin, onClick, index = 0 }: CoinCardProps) {
       ? `${coin.min_year}+`
       : 'Невідомо';
 
-  const metalInfo = coin.composition || coin.type || 'Не вказано';
-  const series = coin.series || coin.issuer?.name || 'Австро-Угорська Монархія';
-  const faceValue = coin.value?.text || coin.title || '';
+  const metalText  = coin.composition || coin.type || 'Не вказано';
+  const series     = coin.series || coin.issuer?.name || 'Австро-Угорська Монархія';
+  const faceValue  = coin.value?.text || coin.title || '';
 
   // Toggle obverse/reverse on click
   const handleImageClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     const reverseSrc = coin.reverse_thumbnail || coin.image?.reverse;
-    const obverseSrc = coin.obverse_thumbnail || coin.image?.obverse;
-    
+    const obverseSrc = coin.obverse_thumbnail  || coin.image?.obverse;
+
     if (reverseSrc && reverseSrc !== obverseSrc) {
-      setIsFlipped((prev) => !prev);
-      setImgSrc(
-        isFlipped
-          ? obverseSrc || FALLBACK_IMAGE
-          : reverseSrc || FALLBACK_IMAGE
-      );
+      setIsFlipped(prev => !prev);
+      setImgSrc(isFlipped ? obverseSrc || FALLBACK_IMAGE : reverseSrc || FALLBACK_IMAGE);
     }
   };
 
-  const animStyle = {
-    animationDelay: `${index * 60}ms`,
-  };
+  const animStyle = { animationDelay: `${index * 60}ms` };
 
   return (
     <article
@@ -93,7 +87,7 @@ export default function CoinCard({ coin, onClick, index = 0 }: CoinCardProps) {
             {!imgError ? (
               <Image
                 src={imgSrc}
-                alt={coin.title || 'Монета'}
+                alt={coin.title}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                 onError={() => {
@@ -118,7 +112,8 @@ export default function CoinCard({ coin, onClick, index = 0 }: CoinCardProps) {
         </div>
 
         {/* Flip indicator */}
-        {(coin.reverse_thumbnail || coin.image?.reverse) && (coin.reverse_thumbnail || coin.image?.reverse) !== (coin.obverse_thumbnail || coin.image?.obverse) && (
+        {(coin.reverse_thumbnail || coin.image?.reverse) &&
+          (coin.reverse_thumbnail || coin.image?.reverse) !== (coin.obverse_thumbnail || coin.image?.obverse) && (
           <span className="absolute bottom-2 right-3 text-[10px] text-amber-500/70 font-medium italic">
             {isFlipped ? '← Аверс' : 'Реверс →'}
           </span>
@@ -153,13 +148,7 @@ export default function CoinCard({ coin, onClick, index = 0 }: CoinCardProps) {
           {/* Metal/Composition */}
           <div className="flex items-center gap-2 text-sm text-stone-600">
             <Layers size={13} className="text-amber-600 shrink-0" />
-            {(() => {
-              const displayMetalInfo = typeof metalInfo === 'object' ? (metalInfo as any)?.text : metalInfo;
-              const finalMetalText = displayMetalInfo || "Невідомий метал";
-              return (
-                <span className="line-clamp-1" title={finalMetalText}>{finalMetalText}</span>
-              );
-            })()}
+            <span className="line-clamp-1" title={metalText}>{metalText}</span>
           </div>
 
           {/* Series/Issuer */}
