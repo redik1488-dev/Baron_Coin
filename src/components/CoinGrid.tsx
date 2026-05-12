@@ -26,13 +26,13 @@ const RULERS_AH: RulerDef[] = [
 
 const RULERS_HABSBURG: RulerDef[] = [
   { id: 'Фердинанд I Габсбург (1526–1564)', name: 'Ferdinand I',   reign: '1526-1564', img: '/rulers/ferdinand_i.png' },
-  { id: 'Максиміліан II (1564–1576)',       name: 'Maximilian II', reign: '1564-1576', img: '/rulers/rudolf_ii.png' },
+  { id: 'Максиміліан II (1564–1576)',       name: 'Maximilian II', reign: '1564-1576', img: '/rulers/maximilian_ii.png' },
   { id: 'Рудольф II (1576–1612)',           name: 'Rudolf II',     reign: '1576-1612', img: '/rulers/rudolf_ii.png' },
-  { id: 'Матіас (1612–1619)',               name: 'Matthias',      reign: '1612-1619', img: '/rulers/leopold_i_habsburg.png' },
-  { id: 'Фердинанд II (1619–1637)',         name: 'Ferdinand II',  reign: '1619-1637', img: '/rulers/ferdinand_i.png' },
-  { id: 'Фердинанд III (1637–1657)',        name: 'Ferdinand III', reign: '1637-1657', img: '/rulers/ferdinand_i.png' },
+  { id: 'Матіас (1612–1619)',               name: 'Matthias',      reign: '1612-1619', img: '/rulers/matthias.png' },
+  { id: 'Фердинанд II (1619–1637)',         name: 'Ferdinand II',  reign: '1619-1637', img: '/rulers/ferdinand_ii.png' },
+  { id: 'Фердинанд III (1637–1657)',        name: 'Ferdinand III', reign: '1637-1657', img: '/rulers/ferdinand_iii.png' },
   { id: 'Леопольд I (1657–1705)',           name: 'Leopold I',     reign: '1657-1705', img: '/rulers/leopold_i_habsburg.png' },
-  { id: 'Йосип I (1705–1711)',              name: 'Joseph I',      reign: '1705-1711', img: '/rulers/charles_vi.png' },
+  { id: 'Йосип I (1705–1711)',              name: 'Joseph I',      reign: '1705-1711', img: '/rulers/joseph_i.png' },
   { id: 'Карл VI (1711–1740)',              name: 'Charles VI',    reign: '1711-1740', img: '/rulers/charles_vi.png' },
   { id: 'Марія Терезія (1740–1780)',        name: 'Maria Theresa', reign: '1740-1780', img: '/rulers/maria_theresa.png' },
   { id: 'Йосип II (1780–1790)',             name: 'Joseph II',     reign: '1780-1790', img: '/rulers/joseph_ii.png' },

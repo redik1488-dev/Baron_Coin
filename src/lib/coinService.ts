@@ -12,49 +12,49 @@ import { getAdminDb } from './firebaseAdmin';
 import { CoinType, NumistaRawCoin, NumistaSearchResponse, Rarity } from '@/types/coin';
 
 const NUMISTA_API_BASE = 'https://api.numista.com/api/v3';
-const NUMISTA_API_KEY  = 'Ch83szgfRoMbUDK1sG3iaF31C5rFCwbSM5pKaZnW';
-const CACHE_TTL_MS     = 7 * 24 * 60 * 60 * 1000; // 7 днів
+const NUMISTA_API_KEY = 'EsJUn2czABaelIdhfK4iBTcbDNBbSV8zQgdH8l6G';
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 днів
 
 const AH_ISSUERS = new Set(['autriche', 'autriche-habsbourg', 'hongrie', 'hungary']);
 
 const AH_QUERIES: Array<{ q: string; count: number }> = [
   // === Австро-Угорська монархія (1792–1918) ===
-  { q: 'Francis II 1800',      count: 50 },
-  { q: 'Franz II thaler',      count: 50 },
-  { q: 'Francis II kreuzer',   count: 50 },
-  { q: 'Ferdinand I 1840',     count: 50 },
-  { q: 'Ferdinand I 1845',     count: 50 },
-  { q: 'Franz Joseph florin',  count: 50 },
+  { q: 'Francis II 1800', count: 50 },
+  { q: 'Franz II thaler', count: 50 },
+  { q: 'Francis II kreuzer', count: 50 },
+  { q: 'Ferdinand I 1840', count: 50 },
+  { q: 'Ferdinand I 1845', count: 50 },
+  { q: 'Franz Joseph florin', count: 50 },
   { q: 'kreuzer Franz Joseph', count: 50 },
-  { q: 'corona Austria',       count: 50 },
-  { q: 'heller Austria',       count: 50 },
-  { q: 'filler Hungary',       count: 50 },
-  { q: 'ducat Franz Joseph',   count: 50 },
-  { q: '10 heller 1916',       count: 50 },
-  { q: '20 heller 1916',       count: 50 },
-  { q: 'Charles I filler',     count: 50 },
+  { q: 'corona Austria', count: 50 },
+  { q: 'heller Austria', count: 50 },
+  { q: 'filler Hungary', count: 50 },
+  { q: 'ducat Franz Joseph', count: 50 },
+  { q: '10 heller 1916', count: 50 },
+  { q: '20 heller 1916', count: 50 },
+  { q: 'Charles I filler', count: 50 },
   // === Австрійська монархія Габсбургів (1526–1792) ===
   { q: 'Maria Theresa thaler', count: 50 },
-  { q: 'Maria Theresa kreuzer',count: 50 },
-  { q: 'Leopold I Austria',    count: 50 },
-  { q: 'Leopold I thaler',     count: 50 },
-  { q: 'Charles VI Austria',   count: 50 },
-  { q: 'Karl VI Austria',      count: 50 },
-  { q: 'Joseph II Austria',    count: 50 },
-  { q: 'Joseph II kreuzer',    count: 50 },
-  { q: 'Leopold II Austria',   count: 50 },
-  { q: 'Rudolf II Austria',    count: 50 },
-  { q: 'Rudolf II thaler',     count: 50 },
+  { q: 'Maria Theresa kreuzer', count: 50 },
+  { q: 'Leopold I Austria', count: 50 },
+  { q: 'Leopold I thaler', count: 50 },
+  { q: 'Charles VI Austria', count: 50 },
+  { q: 'Karl VI Austria', count: 50 },
+  { q: 'Joseph II Austria', count: 50 },
+  { q: 'Joseph II kreuzer', count: 50 },
+  { q: 'Leopold II Austria', count: 50 },
+  { q: 'Rudolf II Austria', count: 50 },
+  { q: 'Rudolf II thaler', count: 50 },
   { q: 'Ferdinand I Habsburg', count: 50 },
-  { q: 'Maximilian II Austria',count: 50 },
+  { q: 'Maximilian II Austria', count: 50 },
   { q: 'Ferdinand II Austria', count: 50 },
-  { q: 'Ferdinand III Austria',count: 50 },
-  { q: 'Joseph I Austria',     count: 50 },
+  { q: 'Ferdinand III Austria', count: 50 },
+  { q: 'Joseph I Austria', count: 50 },
 ];
 
-const COL_COINS        = 'coins';
+const COL_COINS = 'coins';
 const COL_CATALOG_META = 'coin_catalog_meta';
-const CATALOG_KEY      = 'habsburg-austria-full-v1'; // оновлений ключ для розширеного каталогу
+const CATALOG_KEY = 'habsburg-austria-full-v1'; // оновлений ключ для розширеного каталогу
 
 // --- Утиліти ---
 
@@ -85,33 +85,33 @@ function normalizeRawCoin(raw: NumistaRawCoin): Omit<CoinType, 'rarity' | 'ruler
     : undefined;
 
   return {
-    id:                 raw.id,
-    title:              toStr(raw.title)  || 'Unknown',
-    min_year:           raw.min_year,
-    max_year:           raw.max_year,
-    issuer:             raw.issuer
-                          ? { name: raw.issuer.name ?? '', code: raw.issuer.code }
-                          : undefined,
-    composition:        toStr(raw.composition) || undefined,
-    type:               toStr(raw.type)        || undefined,
-    series:             toStr(raw.series)      || undefined,
-    image:              raw.image,
-    obverse_thumbnail:  raw.obverse_thumbnail,
-    reverse_thumbnail:  raw.reverse_thumbnail,
-    value:              raw.value
-                          ? {
-                              text:     toStr(raw.value.text) || undefined,
-                              numeric:  raw.value.numeric,
-                              currency: valueCurrency,
-                            }
-                          : undefined,
-    weight:             raw.weight,
-    size:               raw.size,
-    shape:              toStr(raw.shape)  || undefined,
-    edge:               toStr(raw.edge)   || undefined,
-    demonetized:        raw.demonetized,
-    tags:               raw.tags,
-    category:           raw.category,
+    id: raw.id,
+    title: toStr(raw.title) || 'Unknown',
+    min_year: raw.min_year,
+    max_year: raw.max_year,
+    issuer: raw.issuer
+      ? { name: raw.issuer.name ?? '', code: raw.issuer.code }
+      : undefined,
+    composition: toStr(raw.composition) || undefined,
+    type: toStr(raw.type) || undefined,
+    series: toStr(raw.series) || undefined,
+    image: raw.image,
+    obverse_thumbnail: raw.obverse_thumbnail,
+    reverse_thumbnail: raw.reverse_thumbnail,
+    value: raw.value
+      ? {
+        text: toStr(raw.value.text) || undefined,
+        numeric: raw.value.numeric,
+        currency: valueCurrency,
+      }
+      : undefined,
+    weight: raw.weight,
+    size: raw.size,
+    shape: toStr(raw.shape) || undefined,
+    edge: toStr(raw.edge) || undefined,
+    demonetized: raw.demonetized,
+    tags: raw.tags,
+    category: raw.category,
   };
 }
 
@@ -177,10 +177,10 @@ function determineRuler(year: number, title: string): string {
 function deriveRarity(title: string): Rarity {
   const t = title.toLowerCase();
   if (t.includes('essai') || t.includes('pattern') ||
-      t.includes('proof') || t.includes('specimen') ||
-      t.includes('restrike')) return 'unique';
-  if (t.includes('ducat') || t.includes('sovrano'))     return 'very_rare';
-  if (t.includes('thaler') || t.includes('gulden'))     return 'rare';
+    t.includes('proof') || t.includes('specimen') ||
+    t.includes('restrike')) return 'unique';
+  if (t.includes('ducat') || t.includes('sovrano')) return 'very_rare';
+  if (t.includes('thaler') || t.includes('gulden')) return 'rare';
   if (t.includes('florin') || t.includes('corona') || t.includes('krone')) return 'uncommon';
   return 'common';
 }
@@ -192,24 +192,24 @@ function assembleCoin(base: CoinType, detail?: NumistaRawCoin): CoinType {
   return {
     ...base,
     composition: normalized.composition || base.composition,
-    weight:      normalized.weight      ?? base.weight,
-    size:        normalized.size        ?? base.size,
-    shape:       normalized.shape       || base.shape,
-    edge:        normalized.edge        || base.edge,
+    weight: normalized.weight ?? base.weight,
+    size: normalized.size ?? base.size,
+    shape: normalized.shape || base.shape,
+    edge: normalized.edge || base.edge,
   };
 }
 
 // --- Firestore ---
 
 async function saveCatalogToFirestore(coins: CoinType[]): Promise<void> {
-  const db       = getAdminDb();
+  const db = getAdminDb();
   const expiresAt = Date.now() + CACHE_TTL_MS;
 
   await db.collection(COL_CATALOG_META).doc(CATALOG_KEY).set({
-    coinIds:  coins.map(c => String(c.id)),
+    coinIds: coins.map(c => String(c.id)),
     cachedAt: Date.now(),
     expiresAt,
-    count:    coins.length,
+    count: coins.length,
   });
 
   const BATCH_SIZE = 400;
@@ -217,7 +217,7 @@ async function saveCatalogToFirestore(coins: CoinType[]): Promise<void> {
     const batch = db.batch();
     const chunk = coins.slice(i, i + BATCH_SIZE);
     for (const coin of chunk) {
-      const ref      = db.collection(COL_COINS).doc(String(coin.id));
+      const ref = db.collection(COL_COINS).doc(String(coin.id));
       const cleanCoin = JSON.parse(JSON.stringify(coin));
       batch.set(ref, { ...cleanCoin, cachedAt: Date.now() });
     }
@@ -228,8 +228,8 @@ async function saveCatalogToFirestore(coins: CoinType[]): Promise<void> {
 }
 
 async function loadCoinsFromFirestore(coinIds: string[]): Promise<CoinType[]> {
-  const db     = getAdminDb();
-  const CHUNK  = 30;
+  const db = getAdminDb();
+  const CHUNK = 30;
   const result: CoinType[] = [];
 
   for (let i = 0; i < coinIds.length; i += CHUNK) {
@@ -244,7 +244,7 @@ async function loadCoinsFromFirestore(coinIds: string[]): Promise<CoinType[]> {
 
 async function checkCache(): Promise<string[] | null> {
   try {
-    const db   = getAdminDb();
+    const db = getAdminDb();
     const snap = await db.collection(COL_CATALOG_META).doc(CATALOG_KEY).get();
     if (!snap.exists) return null;
     const meta = snap.data()!;
@@ -266,20 +266,20 @@ async function fetchFromNumista(): Promise<CoinType[]> {
 
   // Крок 1: базовий список
   for (const { q, count } of AH_QUERIES) {
-    let page    = 1;
+    let page = 1;
     let hasMore = true;
 
     while (hasMore) {
       try {
         const url = new URL(`${NUMISTA_API_BASE}/types`);
-        url.searchParams.set('q',     q);
+        url.searchParams.set('q', q);
         url.searchParams.set('count', String(count));
-        url.searchParams.set('page',  String(page));
-        url.searchParams.set('lang',  'en');
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('lang', 'en');
 
         const res = await fetch(url.toString(), {
           headers: { 'Numista-API-Key': NUMISTA_API_KEY },
-          signal:  AbortSignal.timeout(15_000),
+          signal: AbortSignal.timeout(15_000),
         });
 
         if (res.status === 429) {
@@ -298,9 +298,9 @@ async function fetchFromNumista(): Promise<CoinType[]> {
         if (types.length === 0) { hasMore = false; break; }
 
         for (const raw of types) {
-          const id          = String(raw.id);
-          const issuerCode  = (raw.issuer?.code || '').toLowerCase();
-          const year        = raw.min_year || 0;
+          const id = String(raw.id);
+          const issuerCode = (raw.issuer?.code || '').toLowerCase();
+          const year = raw.min_year || 0;
 
           const isAH = AH_ISSUERS.has(issuerCode) ||
             issuerCode.includes('autriche') ||
@@ -309,7 +309,7 @@ async function fetchFromNumista(): Promise<CoinType[]> {
             issuerCode.includes('hungary');
 
           const isCorrectPeriod = year >= 1526 && year <= 1918;
-          const isCoinCategory  = raw.category === 'coin';
+          const isCoinCategory = raw.category === 'coin';
 
           if (!allCoinsMap.has(id) && isAH && isCorrectPeriod && isCoinCategory) {
             // --- НОРМАЛІЗАЦІЯ ТУТ ---
@@ -317,7 +317,7 @@ async function fetchFromNumista(): Promise<CoinType[]> {
             allCoinsMap.set(id, {
               ...normalized,
               rarity: deriveRarity(normalized.title),
-              ruler:  determineRuler(year, normalized.title),
+              ruler: determineRuler(year, normalized.title),
             });
           }
         }
@@ -408,10 +408,10 @@ export class CoinService {
 
   static async getCoinById(id: string): Promise<CoinType | null> {
     try {
-      const db   = getAdminDb();
+      const db = getAdminDb();
       const snap = await db.collection(COL_COINS).doc(id).get();
       if (snap.exists) return snap.data() as CoinType;
-    } catch {}
+    } catch { }
 
     try {
       const res = await fetch(`${NUMISTA_API_BASE}/types/${id}?lang=en`, {
@@ -419,10 +419,10 @@ export class CoinService {
       });
       if (!res.ok) return null;
       const raw: NumistaRawCoin = await res.json();
-      const normalized          = normalizeRawCoin(raw);
-      const coin: CoinType      = {
+      const normalized = normalizeRawCoin(raw);
+      const coin: CoinType = {
         ...normalized,
-        rarity:   deriveRarity(normalized.title),
+        rarity: deriveRarity(normalized.title),
         cachedAt: Date.now(),
       };
       const db = getAdminDb();
