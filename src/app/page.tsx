@@ -111,7 +111,7 @@ function Header({ onRefresh, loading, source }: { onRefresh: () => void; loading
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const { coins, loading, error, source, refresh } = useCoinCatalog();
+  const { coins, rulerCounts, loading, error, source, refresh } = useCoinCatalog();
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -150,7 +150,7 @@ export default function HomePage() {
             </div>
           </div>
         ) : (
-          <CoinGrid coins={coins} />
+          <CoinGrid coins={coins} externalRulerCounts={rulerCounts} />
         )}
       </main>
 

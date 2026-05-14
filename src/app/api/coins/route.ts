@@ -9,12 +9,20 @@ export async function GET(req: NextRequest) {
   const shouldRefresh = req.nextUrl.searchParams.get('refresh') === 'true';
 
   try {
-    const coins = shouldRefresh
-      ? await CoinService.refreshCache()
-      : await CoinService.getCatalog();
+    let coins: any[] = [];
+    let rulerCounts: Record<string, number> | undefined;
+
+    if (shouldRefresh) {
+      coins = await CoinService.refreshCache();
+    } else {
+      const result = await CoinService.getCatalog();
+      coins = result.coins;
+      rulerCounts = result.rulerCounts;
+    }
 
     return NextResponse.json({
       coins,
+      rulerCounts,
       count: coins.length,
       source: shouldRefresh ? 'api' : 'cache',
       timestamp: new Date().toISOString(),
