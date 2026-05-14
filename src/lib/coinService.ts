@@ -12,7 +12,7 @@ import { getAdminDb } from './firebaseAdmin';
 import { CoinType, NumistaRawCoin, NumistaSearchResponse, Rarity } from '@/types/coin';
 
 const NUMISTA_API_BASE = 'https://api.numista.com/api/v3';
-const NUMISTA_API_KEY = 'EsJUn2czABaelIdhfK4iBTcbDNBbSV8zQgdH8l6G';
+const NUMISTA_API_KEY = 'Ch83szgfRoMbUDK1sG3iaF31C5rFCwbSM5pKaZnW';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 днів
 
 const AH_ISSUERS = new Set(['autriche', 'autriche-habsbourg', 'hongrie', 'hungary']);

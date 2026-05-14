@@ -15,11 +15,19 @@ interface CoinCardProps {
 
 const FALLBACK_IMAGE = '/coin-placeholder.svg';
 
+/** Перенаправляє зображення Numista через наш сервер, щоб обійти hotlink-захист */
+function proxyImg(url: string | undefined): string {
+  if (!url) return FALLBACK_IMAGE;
+  if (url.startsWith('/')) return url; // локальні — без проксі
+  return `/api/img?url=${encodeURIComponent(url)}`;
+}
+
 export default function CoinCard({ coin, onClick, index = 0 }: CoinCardProps) {
   const [imgSrc, setImgSrc] = useState<string>(
-    coin.obverse_thumbnail || coin.reverse_thumbnail || coin.image?.obverse || coin.image?.reverse || FALLBACK_IMAGE
+    proxyImg(coin.obverse_thumbnail || coin.reverse_thumbnail || coin.image?.obverse || coin.image?.reverse)
   );
   const [imgError, setImgError] = useState(false);
+
   const [isFlipped, setIsFlipped] = useState(false);
 
   const yearRange =
@@ -43,7 +51,7 @@ export default function CoinCard({ coin, onClick, index = 0 }: CoinCardProps) {
 
     if (reverseSrc && reverseSrc !== obverseSrc) {
       setIsFlipped(prev => !prev);
-      setImgSrc(isFlipped ? obverseSrc || FALLBACK_IMAGE : reverseSrc || FALLBACK_IMAGE);
+      setImgSrc(isFlipped ? proxyImg(obverseSrc) : proxyImg(reverseSrc));
     }
   };
 
