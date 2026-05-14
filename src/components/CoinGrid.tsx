@@ -342,7 +342,13 @@ export default function CoinGrid({ coins }: CoinGridProps) {
 
                       {/* Status / Weight */}
                       <div className="shrink-0 text-right ml-4 flex flex-col items-end gap-1">
-                        <div className="bg-stone-100 px-3 py-1 rounded-md text-xs font-medium text-stone-600 border border-stone-200">
+                        <div className={`px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest border ${
+                          coin.rarity === 'unique' ? 'bg-purple-50 text-purple-700 border-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.3)]' :
+                          coin.rarity === 'very_rare' ? 'bg-rose-50 text-rose-700 border-rose-300 shadow-[0_0_8px_rgba(225,29,72,0.25)]' :
+                          coin.rarity === 'rare' ? 'bg-amber-50 text-amber-700 border-amber-400 shadow-[0_0_8px_rgba(217,119,6,0.25)]' :
+                          coin.rarity === 'uncommon' ? 'bg-sky-50 text-sky-700 border-sky-300' :
+                          'bg-stone-100 text-stone-500 border-stone-200'
+                        }`}>
                           {coin.rarity === 'unique' ? 'Унікальна' :
                             coin.rarity === 'very_rare' ? 'Дуже Рідкісна' :
                               coin.rarity === 'rare' ? 'Рідкісна' :
