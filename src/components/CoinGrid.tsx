@@ -8,7 +8,6 @@ import CoinModal from './CoinModal';
 
 interface CoinGridProps {
   coins: CoinType[];
-  externalRulerCounts?: Record<string, number> | null;
 }
 
 interface RulerDef {
@@ -71,21 +70,19 @@ function parseNominalValue(title: string): number {
   return 0;
 }
 
-export default function CoinGrid({ coins, externalRulerCounts }: CoinGridProps) {
+export default function CoinGrid({ coins }: CoinGridProps) {
   const [selectedRuler, setSelectedRuler] = useState<string | null>(null);
   const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [exportData, setExportData] = useState<string | null>(null);
 
   const rulerCounts = useMemo(() => {
-    if (externalRulerCounts) return externalRulerCounts;
-    
     const counts: Record<string, number> = {};
     coins.forEach(c => {
       if (c.ruler) counts[c.ruler] = (counts[c.ruler] || 0) + 1;
     });
     return counts;
-  }, [coins, externalRulerCounts]);
+  }, [coins]);
 
   const groupedAndFilteredCoins = useMemo(() => {
     if (!selectedRuler) return {};

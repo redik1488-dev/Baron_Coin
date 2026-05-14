@@ -12,7 +12,7 @@ import { getAdminDb } from './firebaseAdmin';
 import { CoinType, NumistaRawCoin, NumistaSearchResponse, Rarity } from '@/types/coin';
 
 const NUMISTA_API_BASE = 'https://api.numista.com/api/v3';
-const NUMISTA_API_KEY = 'WmEeyZkAdqGxFAbhm0KZ76BFiVSUzSaWf1CWVTOc';
+const NUMISTA_API_KEY = 'Ch83szgfRoMbUDK1sG3iaF31C5rFCwbSM5pKaZnW';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 днів
 
 const AH_ISSUERS = new Set(['autriche', 'autriche-habsbourg', 'hongrie', 'hungary']);
@@ -205,14 +205,8 @@ async function saveCatalogToFirestore(coins: CoinType[]): Promise<void> {
   const db = getAdminDb();
   const expiresAt = Date.now() + CACHE_TTL_MS;
 
-  const rulerCounts: Record<string, number> = {};
-  coins.forEach(c => {
-    if (c.ruler) rulerCounts[c.ruler] = (rulerCounts[c.ruler] || 0) + 1;
-  });
-
   await db.collection(COL_CATALOG_META).doc(CATALOG_KEY).set({
     coinIds: coins.map(c => String(c.id)),
-    rulerCounts,
     cachedAt: Date.now(),
     expiresAt,
     count: coins.length,
@@ -235,35 +229,20 @@ async function saveCatalogToFirestore(coins: CoinType[]): Promise<void> {
 
 async function loadCoinsFromFirestore(coinIds: string[]): Promise<CoinType[]> {
   const db = getAdminDb();
-  // Використовуємо db.getAll() для масового читання — це набагато швидше
-  // Оптимальний CHUNK для getAll — до 1000 документів за раз
-  const CHUNK = 500;
+  const CHUNK = 30;
   const result: CoinType[] = [];
 
   for (let i = 0; i < coinIds.length; i += CHUNK) {
-    const chunkIds = coinIds.slice(i, i + CHUNK);
-    const refs = chunkIds.map(id => db.collection(COL_COINS).doc(id));
-    
-    try {
-      const snaps = await db.getAll(...refs);
-      for (const snap of snaps) {
-        if (snap.exists) {
-          result.push(snap.data() as CoinType);
-        }
-      }
-    } catch (err) {
-      console.error(`[CoinService] Помилка при масовому завантаженні (chunk ${i}):`, err);
-      // Фолбек на поштучне завантаження, якщо getAll впав (малоімовірно)
-      const individualSnaps = await Promise.all(chunkIds.map(id => db.collection(COL_COINS).doc(id).get()));
-      for (const snap of individualSnaps) {
-        if (snap.exists) result.push(snap.data() as CoinType);
-      }
+    const chunk = coinIds.slice(i, i + CHUNK);
+    const snaps = await Promise.all(chunk.map(id => db.collection(COL_COINS).doc(id).get()));
+    for (const snap of snaps) {
+      if (snap.exists) result.push(snap.data() as CoinType);
     }
   }
   return result;
 }
 
-async function checkCache(): Promise<{ ids: string[], counts: Record<string, number> } | null> {
+async function checkCache(): Promise<string[] | null> {
   try {
     const db = getAdminDb();
     const snap = await db.collection(COL_CATALOG_META).doc(CATALOG_KEY).get();
@@ -271,10 +250,7 @@ async function checkCache(): Promise<{ ids: string[], counts: Record<string, num
     const meta = snap.data()!;
     if (Date.now() > meta.expiresAt) return null;
     console.log(`[CoinService] Кеш актуальний (${meta.count} монет).`);
-    return {
-      ids: meta.coinIds as string[],
-      counts: (meta.rulerCounts || {}) as Record<string, number>
-    };
+    return meta.coinIds as string[];
   } catch (err) {
     console.error('[CoinService] checkCache error:', err);
     return null;
@@ -403,13 +379,13 @@ async function fetchFromNumista(): Promise<CoinType[]> {
 // --- Public API ---
 
 export class CoinService {
-  static async getCatalog(): Promise<{ coins: CoinType[], rulerCounts?: Record<string, number> }> {
-    const cached = await checkCache();
-    if (cached && cached.ids.length > 0) {
-      const coins = await loadCoinsFromFirestore(cached.ids);
+  static async getCatalog(): Promise<CoinType[]> {
+    const cachedIds = await checkCache();
+    if (cachedIds && cachedIds.length > 0) {
+      const coins = await loadCoinsFromFirestore(cachedIds);
       if (coins.length > 0) {
         console.log(`[CoinService] ✅ Повернуто ${coins.length} монет з Firestore.`);
-        return { coins, rulerCounts: cached.counts };
+        return coins;
       }
     }
 
@@ -419,14 +395,7 @@ export class CoinService {
         console.error('[CoinService] Помилка збереження в Firestore:', err)
       );
     }
-    
-    // Рахуємо counts для свіжозавантажених
-    const rulerCounts: Record<string, number> = {};
-    coins.forEach(c => {
-      if (c.ruler) rulerCounts[c.ruler] = (rulerCounts[c.ruler] || 0) + 1;
-    });
-
-    return { coins, rulerCounts };
+    return coins;
   }
 
   static async refreshCache(): Promise<CoinType[]> {
