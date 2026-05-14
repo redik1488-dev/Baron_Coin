@@ -204,53 +204,68 @@ function assembleCoin(base: CoinType, detail?: NumistaRawCoin): CoinType {
 async function saveCatalogToFirestore(coins: CoinType[]): Promise<void> {
   const db = getAdminDb();
   const expiresAt = Date.now() + CACHE_TTL_MS;
+  const cachedAt = Date.now();
 
-  await db.collection(COL_CATALOG_META).doc(CATALOG_KEY).set({
-    coinIds: coins.map(c => String(c.id)),
-    cachedAt: Date.now(),
-    expiresAt,
-    count: coins.length,
-  });
+  // Зберігаємо монети прямо в meta-документі (1 read = весь каталог)
+  // Firestore limit: 1MB per document. Перевіряємо розмір.
+  const inlinePayload = JSON.stringify(coins);
+  const inlineSizeKB = Buffer.byteLength(inlinePayload, 'utf8') / 1024;
 
-  const BATCH_SIZE = 400;
-  for (let i = 0; i < coins.length; i += BATCH_SIZE) {
-    const batch = db.batch();
-    const chunk = coins.slice(i, i + BATCH_SIZE);
-    for (const coin of chunk) {
-      const ref = db.collection(COL_COINS).doc(String(coin.id));
-      const cleanCoin = JSON.parse(JSON.stringify(coin));
-      batch.set(ref, { ...cleanCoin, cachedAt: Date.now() });
+  if (inlineSizeKB < 900) {
+    // Влазить в 1MB — зберігаємо inline
+    await db.collection(COL_CATALOG_META).doc(CATALOG_KEY).set({
+      coins,
+      coinIds: coins.map(c => String(c.id)),
+      cachedAt,
+      expiresAt,
+      count: coins.length,
+      inline: true,
+    });
+    console.log(`[CoinService] ✅ Збережено ${coins.length} монет у Firestore inline (${inlineSizeKB.toFixed(0)}KB).`);
+  } else {
+    // Занадто великий — зберігаємо окремо (fallback)
+    await db.collection(COL_CATALOG_META).doc(CATALOG_KEY).set({
+      coinIds: coins.map(c => String(c.id)),
+      cachedAt,
+      expiresAt,
+      count: coins.length,
+      inline: false,
+    });
+
+    const BATCH_SIZE = 400;
+    for (let i = 0; i < coins.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      const chunk = coins.slice(i, i + BATCH_SIZE);
+      for (const coin of chunk) {
+        const ref = db.collection(COL_COINS).doc(String(coin.id));
+        batch.set(ref, { ...JSON.parse(JSON.stringify(coin)), cachedAt });
+      }
+      await batch.commit();
     }
-    await batch.commit();
+    console.log(`[CoinService] ✅ Збережено ${coins.length} монет у Firestore (окремі документи, ${inlineSizeKB.toFixed(0)}KB).`);
   }
-
-  console.log(`[CoinService] ✅ Збережено ${coins.length} монет у Firestore.`);
 }
 
 async function loadCoinsFromFirestore(coinIds: string[]): Promise<CoinType[]> {
   const db = getAdminDb();
-  const CHUNK = 30;
-  const result: CoinType[] = [];
-
-  for (let i = 0; i < coinIds.length; i += CHUNK) {
-    const chunk = coinIds.slice(i, i + CHUNK);
-    const snaps = await Promise.all(chunk.map(id => db.collection(COL_COINS).doc(id).get()));
-    for (const snap of snaps) {
-      if (snap.exists) result.push(snap.data() as CoinType);
-    }
-  }
-  return result;
+  // db.getAll() — один мережевий запит для всіх документів (замість N/30 послідовних)
+  const refs = coinIds.map(id => db.collection(COL_COINS).doc(id));
+  const snaps = await db.getAll(...refs);
+  return snaps.filter(s => s.exists).map(s => s.data() as CoinType);
 }
 
-async function checkCache(): Promise<string[] | null> {
+async function checkCache(): Promise<{ coinIds: string[]; coins?: CoinType[] } | null> {
   try {
     const db = getAdminDb();
     const snap = await db.collection(COL_CATALOG_META).doc(CATALOG_KEY).get();
     if (!snap.exists) return null;
     const meta = snap.data()!;
     if (Date.now() > meta.expiresAt) return null;
-    console.log(`[CoinService] Кеш актуальний (${meta.count} монет).`);
-    return meta.coinIds as string[];
+    console.log(`[CoinService] Кеш актуальний (${meta.count} монет, inline=${meta.inline}).`);
+    if (meta.inline && Array.isArray(meta.coins) && meta.coins.length > 0) {
+      return { coinIds: meta.coinIds as string[], coins: meta.coins as CoinType[] };
+    }
+    return { coinIds: meta.coinIds as string[] };
   } catch (err) {
     console.error('[CoinService] checkCache error:', err);
     return null;
@@ -380,14 +395,23 @@ async function fetchFromNumista(): Promise<CoinType[]> {
 
 export class CoinService {
   static async getCatalog(): Promise<CoinType[]> {
-    const cachedIds = await checkCache();
-    if (cachedIds && cachedIds.length > 0) {
-      const coins = await loadCoinsFromFirestore(cachedIds);
-      if (coins.length > 0) {
-        console.log(`[CoinService] ✅ Повернуто ${coins.length} монет з Firestore.`);
-        return coins;
+    const cached = await checkCache();
+    if (cached) {
+      // Якщо є inline coins — повертаємо одразу (1 Firestore read!)
+      if (cached.coins && cached.coins.length > 0) {
+        console.log(`[CoinService] ✅ Повернуто ${cached.coins.length} монет з inline кешу (1 read).`);
+        return cached.coins;
+      }
+      // Fallback: читаємо окремі документи через getAll()
+      if (cached.coinIds && cached.coinIds.length > 0) {
+        const coins = await loadCoinsFromFirestore(cached.coinIds);
+        if (coins.length > 0) {
+          console.log(`[CoinService] ✅ Повернуто ${coins.length} монет з Firestore (getAll).`);
+          return coins;
+        }
       }
     }
+
 
     const coins = await fetchFromNumista();
     if (coins.length > 0) {
