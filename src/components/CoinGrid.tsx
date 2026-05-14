@@ -18,25 +18,25 @@ interface RulerDef {
 }
 
 const RULERS_AH: RulerDef[] = [
-  { id: 'Франц II (1792–1835)',        name: 'Francis II',       reign: '1792-1835', img: '/rulers/francis_ii.png' },
-  { id: 'Фердинанд I (1835–1848)',     name: 'Ferdinand I',      reign: '1835-1848', img: '/rulers/ferdinand_i.png' },
-  { id: 'Франц Йосиф I (1848–1916)',   name: 'Franz Joseph I',   reign: '1848-1916', img: '/rulers/franz_joseph.png' },
-  { id: 'Карл I (1916–1918)',          name: 'Charles I',        reign: '1916-1918', img: '/rulers/karl_i.png' },
+  { id: 'Франц II (1792–1835)', name: 'Francis II', reign: '1792-1835', img: '/rulers/francis_ii.webp' },
+  { id: 'Фердинанд I (1835–1848)', name: 'Ferdinand I', reign: '1835-1848', img: '/rulers/ferdinand_i.webp' },
+  { id: 'Франц Йосиф I (1848–1916)', name: 'Franz Joseph I', reign: '1848-1916', img: '/rulers/franz_joseph.webp' },
+  { id: 'Карл I (1916–1918)', name: 'Charles I', reign: '1916-1918', img: '/rulers/karl_i.webp' },
 ];
 
 const RULERS_HABSBURG: RulerDef[] = [
-  { id: 'Фердинанд I Габсбург (1526–1564)', name: 'Ferdinand I',   reign: '1526-1564', img: '/rulers/ferdinand_i_habsburg.png' },
-  { id: 'Максиміліан II (1564–1576)',       name: 'Maximilian II', reign: '1564-1576', img: '/rulers/maximilian_ii.png' },
-  { id: 'Рудольф II (1576–1612)',           name: 'Rudolf II',     reign: '1576-1612', img: '/rulers/rudolf_ii.webp' },
-  { id: 'Матіас (1612–1619)',               name: 'Matthias',      reign: '1612-1619', img: '/rulers/matthias.png' },
-  { id: 'Фердинанд II (1619–1637)',         name: 'Ferdinand II',  reign: '1619-1637', img: '/rulers/ferdinand_ii.png' },
-  { id: 'Фердинанд III (1637–1657)',        name: 'Ferdinand III', reign: '1637-1657', img: '/rulers/ferdinand_iii.png' },
-  { id: 'Леопольд I (1657–1705)',           name: 'Leopold I',     reign: '1657-1705', img: '/rulers/leopold_i_habsburg.png' },
-  { id: 'Йосип I (1705–1711)',              name: 'Joseph I',      reign: '1705-1711', img: '/rulers/joseph_i.png' },
-  { id: 'Карл VI (1711–1740)',              name: 'Charles VI',    reign: '1711-1740', img: '/rulers/charles_vi.png' },
-  { id: 'Марія Терезія (1740–1780)',        name: 'Maria Theresa', reign: '1740-1780', img: '/rulers/maria_theresa.png' },
-  { id: 'Йосип II (1780–1790)',             name: 'Joseph II',     reign: '1780-1790', img: '/rulers/joseph_ii.png' },
-  { id: 'Леопольд II (1790–1792)',          name: 'Leopold II',    reign: '1790-1792', img: '/rulers/leopold_ii_habsburg.png' },
+  { id: 'Фердинанд I Габсбург (1526–1564)', name: 'Ferdinand I', reign: '1526-1564', img: '/rulers/ferdinand_i_habsburg.webp' },
+  { id: 'Максиміліан II (1564–1576)', name: 'Maximilian II', reign: '1564-1576', img: '/rulers/maximilian_ii.webp' },
+  { id: 'Рудольф II (1576–1612)', name: 'Rudolf II', reign: '1576-1612', img: '/rulers/rudolf_ii.webp' },
+  { id: 'Матіас (1612–1619)', name: 'Matthias', reign: '1612-1619', img: '/rulers/matthias.webp' },
+  { id: 'Фердинанд II (1619–1637)', name: 'Ferdinand II', reign: '1619-1637', img: '/rulers/ferdinand_ii.webp' },
+  { id: 'Фердинанд III (1637–1657)', name: 'Ferdinand III', reign: '1637-1657', img: '/rulers/ferdinand_iii.webp' },
+  { id: 'Леопольд I (1657–1705)', name: 'Leopold I', reign: '1657-1705', img: '/rulers/leopold_i_habsburg.webp' },
+  { id: 'Йосип I (1705–1711)', name: 'Joseph I', reign: '1705-1711', img: '/rulers/joseph_i.webp' },
+  { id: 'Карл VI (1711–1740)', name: 'Charles VI', reign: '1711-1740', img: '/rulers/charles_vi.webp' },
+  { id: 'Марія Терезія (1740–1780)', name: 'Maria Theresa', reign: '1740-1780', img: '/rulers/maria_theresa.webp' },
+  { id: 'Йосип II (1780–1790)', name: 'Joseph II', reign: '1780-1790', img: '/rulers/joseph_ii.webp' },
+  { id: 'Леопольд II (1790–1792)', name: 'Leopold II', reign: '1790-1792', img: '/rulers/leopold_ii_habsburg.webp' },
 ];
 
 const ALL_RULERS = [...RULERS_HABSBURG, ...RULERS_AH];
@@ -72,9 +72,9 @@ function parseNominalValue(title: string): number {
 
 export default function CoinGrid({ coins }: CoinGridProps) {
   const [selectedRuler, setSelectedRuler] = useState<string | null>(null);
-  const [selectedCoin, setSelectedCoin]   = useState<CoinType | null>(null);
-  const [searchQuery, setSearchQuery]     = useState('');
-  const [exportData, setExportData]       = useState<string | null>(null);
+  const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [exportData, setExportData] = useState<string | null>(null);
 
   const rulerCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -92,8 +92,8 @@ export default function CoinGrid({ coins }: CoinGridProps) {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(c =>
-        (c.title        || '').toLowerCase().includes(q) ||
-        (c.composition  || '').toLowerCase().includes(q)
+        (c.title || '').toLowerCase().includes(q) ||
+        (c.composition || '').toLowerCase().includes(q)
       );
     }
 
@@ -120,13 +120,13 @@ export default function CoinGrid({ coins }: CoinGridProps) {
     if (!selectedRuler) return;
 
     let text = `Продаж монет епохи: ${selectedRuler}\n\n`;
-    const groups    = groupedAndFilteredCoins;
+    const groups = groupedAndFilteredCoins;
     const sortedKeys = Object.keys(groups).sort();
 
     sortedKeys.forEach(currency => {
       text += `=== ${currency.toUpperCase()} ===\n`;
       groups[currency].forEach(coin => {
-        const yearStr  = coin.min_year === coin.max_year
+        const yearStr = coin.min_year === coin.max_year
           ? String(coin.min_year)
           : `${coin.min_year}-${coin.max_year}`;
         const material = coin.composition || 'Невідомий метал';
@@ -141,7 +141,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
 
   if (!selectedRuler) {
     const RulerCard = ({ ruler }: { ruler: RulerDef }) => {
-      const count    = rulerCounts[ruler.id] || 0;
+      const count = rulerCounts[ruler.id] || 0;
       const isLocked = count === 0;
       return (
         <div
@@ -210,8 +210,8 @@ export default function CoinGrid({ coins }: CoinGridProps) {
 
   const activeRuler = ALL_RULERS.find(r => r.id === selectedRuler);
 
-  const groupKeys   = Object.keys(groupedAndFilteredCoins).sort();
-  const totalCoins  = groupKeys.reduce((acc, key) => acc + groupedAndFilteredCoins[key].length, 0);
+  const groupKeys = Object.keys(groupedAndFilteredCoins).sort();
+  const totalCoins = groupKeys.reduce((acc, key) => acc + groupedAndFilteredCoins[key].length, 0);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -343,10 +343,10 @@ export default function CoinGrid({ coins }: CoinGridProps) {
                       {/* Status / Weight */}
                       <div className="shrink-0 text-right ml-4 flex flex-col items-end gap-1">
                         <div className="bg-stone-100 px-3 py-1 rounded-md text-xs font-medium text-stone-600 border border-stone-200">
-                          {coin.rarity === 'unique'    ? 'Унікальна'      :
-                           coin.rarity === 'very_rare' ? 'Дуже Рідкісна'  :
-                           coin.rarity === 'rare'      ? 'Рідкісна'       :
-                           coin.rarity === 'uncommon'  ? 'Нечаста'        : 'Часта'}
+                          {coin.rarity === 'unique' ? 'Унікальна' :
+                            coin.rarity === 'very_rare' ? 'Дуже Рідкісна' :
+                              coin.rarity === 'rare' ? 'Рідкісна' :
+                                coin.rarity === 'uncommon' ? 'Нечаста' : 'Часта'}
                         </div>
                         {coin.weight && <div className="text-xs text-stone-400">{coin.weight} г</div>}
                       </div>
