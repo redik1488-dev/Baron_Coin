@@ -95,10 +95,37 @@ function parseNominalValue(title: string): number {
   return 0;
 }
 
+function translateMetal(composition: string | undefined, lang: 'AT' | 'EN' | 'UK'): string {
+  if (!composition) return lang === 'AT' ? 'Unbekanntes Metall' : lang === 'EN' ? 'Unknown metal' : 'Невідомий метал';
+  
+  let comp = composition;
+  // Copper / Bronze / Brass
+  if (comp.match(/copper|cuivre/i)) comp = comp.replace(/copper|cuivre/ig, lang === 'AT' ? 'Kupfer' : lang === 'EN' ? 'Copper' : 'Мідь');
+  if (comp.match(/bronze/i)) comp = comp.replace(/bronze/ig, lang === 'AT' ? 'Bronze' : lang === 'EN' ? 'Bronze' : 'Бронза');
+  if (comp.match(/brass/i)) comp = comp.replace(/brass/ig, lang === 'AT' ? 'Messing' : lang === 'EN' ? 'Brass' : 'Латунь');
+  
+  // Silver / Billon
+  if (comp.match(/silver|argent/i)) comp = comp.replace(/silver|argent/ig, lang === 'AT' ? 'Silber' : lang === 'EN' ? 'Silver' : 'Срібло');
+  if (comp.match(/billon/i)) comp = comp.replace(/billon/ig, lang === 'AT' ? 'Billon' : lang === 'EN' ? 'Billon' : 'Білон');
+  
+  // Gold
+  if (comp.match(/gold|or/i)) comp = comp.replace(/gold|or/ig, lang === 'AT' ? 'Gold' : lang === 'EN' ? 'Gold' : 'Золото');
+  
+  // Other metals
+  if (comp.match(/nickel/i)) comp = comp.replace(/nickel/ig, lang === 'AT' ? 'Nickel' : lang === 'EN' ? 'Nickel' : 'Нікель');
+  if (comp.match(/zinc/i)) comp = comp.replace(/zinc/ig, lang === 'AT' ? 'Zink' : lang === 'EN' ? 'Zinc' : 'Цинк');
+  if (comp.match(/iron/i)) comp = comp.replace(/iron/ig, lang === 'AT' ? 'Eisen' : lang === 'EN' ? 'Iron' : 'Залізо');
+  if (comp.match(/aluminum/i)) comp = comp.replace(/aluminum/ig, lang === 'AT' ? 'Aluminium' : lang === 'EN' ? 'Aluminum' : 'Алюміній');
+  if (comp.match(/tin/i)) comp = comp.replace(/tin/ig, lang === 'AT' ? 'Zinn' : lang === 'EN' ? 'Tin' : 'Олово');
+  
+  return comp;
+}
+
 export default function CoinGrid({ coins, lang }: CoinGridProps) {
   const [selectedRuler, setSelectedRuler] = useState<string | null>(null);
   const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMetal, setSelectedMetal] = useState<'all' | 'gold' | 'silver' | 'copper'>('all');
 
   const rulerCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -112,6 +139,16 @@ export default function CoinGrid({ coins, lang }: CoinGridProps) {
     if (!selectedRuler) return {};
 
     let result = coins.filter(c => c.ruler === selectedRuler);
+
+    if (selectedMetal !== 'all') {
+      result = result.filter(c => {
+        const comp = (c.composition || '').toLowerCase();
+        if (selectedMetal === 'gold') return comp.includes('gold') || comp.includes('or ') || comp === 'or';
+        if (selectedMetal === 'silver') return comp.includes('silver') || comp.includes('argent') || comp.includes('billon');
+        if (selectedMetal === 'copper') return comp.includes('copper') || comp.includes('cuivre') || comp.includes('bronze') || comp.includes('brass');
+        return true;
+      });
+    }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -244,7 +281,7 @@ export default function CoinGrid({ coins, lang }: CoinGridProps) {
       </div>
 
       {/* Search & Stats */}
-      <div className="flex items-center gap-4 px-2">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 px-2">
         <div className="relative flex-1">
           <input
             type="text"
@@ -257,7 +294,35 @@ export default function CoinGrid({ coins, lang }: CoinGridProps) {
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
         </div>
-        <div className="bg-amber-100 text-amber-900 px-4 py-3 rounded-xl font-medium text-sm border border-amber-200 shadow-sm whitespace-nowrap">
+        
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
+          <button 
+            onClick={() => setSelectedMetal('all')}
+            className={`px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${selectedMetal === 'all' ? 'bg-stone-600 text-white' : 'bg-white text-stone-600 border border-stone-200'}`}
+          >
+            {lang === 'AT' ? 'Alle' : lang === 'EN' ? 'All' : 'Всі'}
+          </button>
+          <button 
+            onClick={() => setSelectedMetal('gold')}
+            className={`px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors shadow-sm ${selectedMetal === 'gold' ? 'bg-yellow-500 text-white border-transparent' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}
+          >
+            {lang === 'AT' ? 'Gold' : lang === 'EN' ? 'Gold' : 'Золото'}
+          </button>
+          <button 
+            onClick={() => setSelectedMetal('silver')}
+            className={`px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors shadow-sm ${selectedMetal === 'silver' ? 'bg-slate-400 text-white border-transparent' : 'bg-slate-50 text-slate-700 border-slate-200'}`}
+          >
+            {lang === 'AT' ? 'Silber' : lang === 'EN' ? 'Silver' : 'Срібло'}
+          </button>
+          <button 
+            onClick={() => setSelectedMetal('copper')}
+            className={`px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors shadow-sm ${selectedMetal === 'copper' ? 'bg-orange-700 text-white border-transparent' : 'bg-orange-50 text-orange-800 border-orange-200'}`}
+          >
+            {lang === 'AT' ? 'Kupfer' : lang === 'EN' ? 'Copper' : 'Мідь'}
+          </button>
+        </div>
+
+        <div className="bg-amber-100 text-amber-900 px-4 py-3 rounded-xl font-medium text-sm border border-amber-200 shadow-sm whitespace-nowrap flex-shrink-0 text-center">
           {lang === 'AT' ? 'Gesamt: ' : lang === 'EN' ? 'Total: ' : 'Всього: '} {totalCoins}
         </div>
       </div>
@@ -315,7 +380,7 @@ export default function CoinGrid({ coins, lang }: CoinGridProps) {
                           {coin.title}
                         </h4>
                         <p className="text-sm text-stone-500 truncate">
-                          <span className="font-medium text-stone-600">{coin.composition || (lang === 'AT' ? 'Unbekanntes Metall' : lang === 'EN' ? 'Unknown metal' : 'Невідомий метал')}</span>
+                          <span className="font-medium text-stone-600">{translateMetal(coin.composition, lang)}</span>
                           {' • '}
                           {coin.min_year}
                           {coin.max_year && coin.max_year !== coin.min_year ? ` - ${coin.max_year}` : ''}

@@ -12,7 +12,7 @@ import { getAdminDb } from './firebaseAdmin';
 import { CoinType, NumistaRawCoin, NumistaSearchResponse, Rarity } from '@/types/coin';
 
 const NUMISTA_API_BASE = 'https://api.numista.com/api/v3';
-const NUMISTA_API_KEY = 'ytOL0aQuB47LjVe9GPX9eGsCWvCJPsHGvdwJcuLY'; // Ch83szgfRoMbUDK1sG3iaF31C5rFCwbSM5pKaZnW | K4wnbBBwy4a4VuXpWZbbloWTmdz5HrMlpU7TX608
+const NUMISTA_API_KEY = 'QplmSlV1A9sEP0u8TYgO3ndfwi2oBZTWNvF82oa';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 днів
 
 // Вилучаємо старі хардкодні квері, бо тепер ми тягнемо все через issuers
@@ -366,7 +366,10 @@ async function fetchFromNumista(): Promise<CoinType[]> {
     fetchedCount += results.length;
 
     if (fetchedCount % 100 === 0 || fetchedCount === relevantCoins.length) {
-      console.log(`[CoinService] Завантажено деталей: ${fetchedCount} / ${relevantCoins.length} (${((fetchedCount / relevantCoins.length) * 100).toFixed(1)}%)`);
+      console.log(`[CoinService] Завантажено деталей: ${fetchedCount} / ${relevantCoins.length} (${((fetchedCount / relevantCoins.length) * 100).toFixed(1)}%). Проміжне збереження в базу...`);
+      // Зберігаємо поточний прогрес: об'єднуємо вже завантажені деталі з тими базовими монетами, до яких ще не дійшли
+      const currentFullList = [...detailedCoins, ...relevantCoins.slice(fetchedCount)];
+      await saveCatalogToFirestore(currentFullList).catch(e => console.error('[CoinService] Помилка проміжного збереження:', e));
     }
 
     await delay(300); // 300ms пауза між батчами
