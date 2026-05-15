@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { CoinType } from '@/types/coin';
 import Image from 'next/image';
-import { ArrowLeft, Search, Lock, Download, X } from 'lucide-react';
+import { ArrowLeft, Search, Lock } from 'lucide-react';
 import CoinModal from './CoinModal';
 
 interface CoinGridProps {
@@ -98,7 +98,6 @@ export default function CoinGrid({ coins }: CoinGridProps) {
   const [selectedRuler, setSelectedRuler] = useState<string | null>(null);
   const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [exportData, setExportData] = useState<string | null>(null);
 
   const rulerCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -140,28 +139,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
     return groups;
   }, [coins, selectedRuler, searchQuery]);
 
-  const handleExport = () => {
-    if (!selectedRuler) return;
 
-    let text = `Продаж монет епохи: ${selectedRuler}\n\n`;
-    const groups = groupedAndFilteredCoins;
-    const sortedKeys = Object.keys(groups).sort(sortCurrencies);
-
-    sortedKeys.forEach(currency => {
-      text += `=== ${currency.toUpperCase()} ===\n`;
-      groups[currency].forEach(coin => {
-        const yearStr = coin.min_year === coin.max_year
-          ? String(coin.min_year)
-          : `${coin.min_year}-${coin.max_year}`;
-        const material = coin.composition || 'Невідомий метал';
-        text += `<strong>${coin.title}</strong> - ${material} - ${yearStr}\n`;
-      });
-      text += `\n`;
-    });
-
-    text += `Всі монети оригінальні. Деталі та додаткові фото в особисті повідомлення.`;
-    setExportData(text);
-  };
 
   if (!selectedRuler) {
     const RulerCard = ({ ruler }: { ruler: RulerDef }) => {
@@ -240,50 +218,21 @@ export default function CoinGrid({ coins }: CoinGridProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4 bg-dark-wood p-4 rounded-t-2xl shadow-xl border-b-4 border-amber-600 relative overflow-hidden">
+      <div className="flex items-center gap-4 bg-stone-900 p-4 rounded-t-2xl shadow-xl border-b-4 border-amber-500 relative overflow-hidden">
         <button
-          onClick={() => { setSelectedRuler(null); setExportData(null); }}
-          className="text-amber-200 hover:text-white transition-colors bg-white/10 p-2 rounded-full relative z-10"
+          onClick={() => setSelectedRuler(null)}
+          className="text-amber-400 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2.5 rounded-full relative z-10"
         >
           <ArrowLeft size={24} />
         </button>
 
-        <div className="flex-1 text-center relative z-10">
-          <h2 className="text-2xl font-cinzel text-imperial-gold font-bold uppercase tracking-widest">
+        <div className="flex-1 text-center relative z-10 pr-12">
+          <h2 className="text-2xl font-cinzel text-amber-500 font-bold uppercase tracking-widest">
             {activeRuler?.name}
           </h2>
-          <p className="text-amber-200/70 text-sm">{activeRuler?.reign}</p>
+          <p className="text-amber-100/90 font-medium tracking-widest text-sm mt-0.5">{activeRuler?.reign}</p>
         </div>
-
-        <button
-          onClick={handleExport}
-          className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg font-medium shadow-md transition-colors relative z-10 text-sm"
-        >
-          <Download size={18} />
-          Експорт
-        </button>
       </div>
-
-      {/* Export Textarea */}
-      {exportData && (
-        <div className="bg-white p-4 rounded-xl border border-stone-300 shadow-sm relative">
-          <button
-            onClick={() => setExportData(null)}
-            className="absolute top-2 right-2 text-stone-400 hover:text-stone-600"
-          >
-            <X size={18} />
-          </button>
-          <p className="text-sm font-semibold text-stone-700 mb-2">Опис для OLX (скопіюйте текст нижче):</p>
-          <textarea
-            readOnly
-            value={exportData}
-            className="w-full h-48 p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-800 font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
-          />
-          <p className="text-xs text-amber-600 mt-2 font-medium bg-amber-50 inline-block px-2 py-1 rounded">
-            HTML теги &lt;strong&gt; підтримуються OLX для виділення тексту жирним шрифтом.
-          </p>
-        </div>
-      )}
 
       {/* Search & Stats */}
       <div className="flex items-center gap-4 px-2">
