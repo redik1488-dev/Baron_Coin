@@ -10,6 +10,16 @@ export interface CoinImage {
   edge?: string;
 }
 
+export interface CoinIssue {
+  id: number;
+  year?: number;
+  gregorian_year?: number;
+  mint_letter?: string;
+  mintage?: number;
+  comment?: string;
+  is_dated?: boolean;
+}
+
 export interface CoinType {
   id: string | number;
   title: string;
@@ -43,6 +53,7 @@ export interface CoinType {
   rarity?: Rarity;
   ruler?: string;
   cachedAt?: number;
+  issues?: CoinIssue[];
 }
 
 // Raw type as it comes from the Numista API (polymorphic fields)

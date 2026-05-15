@@ -12,7 +12,7 @@ import { getAdminDb } from './firebaseAdmin';
 import { CoinType, NumistaRawCoin, NumistaSearchResponse, Rarity } from '@/types/coin';
 
 const NUMISTA_API_BASE = 'https://api.numista.com/api/v3';
-const NUMISTA_API_KEY = 'K4wnbBBwy4a4VuXpWZbbloWTmdz5HrMlpU7TX608'; // Ch83szgfRoMbUDK1sG3iaF31C5rFCwbSM5pKaZnW
+const NUMISTA_API_KEY = 'ytOL0aQuB47LjVe9GPX9eGsCWvCJPsHGvdwJcuLY'; // Ch83szgfRoMbUDK1sG3iaF31C5rFCwbSM5pKaZnW | K4wnbBBwy4a4VuXpWZbbloWTmdz5HrMlpU7TX608
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 днів
 
 // Вилучаємо старі хардкодні квері, бо тепер ми тягнемо все через issuers
@@ -312,10 +312,10 @@ async function fetchFromNumista(): Promise<CoinType[]> {
   // Крок 2: деталі (метал, вага, розмір) з паралельними запитами
   const detailedCoins: CoinType[] = [];
   let fetchedCount = 0;
-  
+
   // Обробляємо по 5 монет одночасно (щоб обійти швидке завантаження без 429)
   const CONCURRENCY = 5;
-  
+
   for (let i = 0; i < relevantCoins.length; i += CONCURRENCY) {
     const chunk = relevantCoins.slice(i, i + CONCURRENCY);
     const promises = chunk.map(async (baseCoin) => {
@@ -334,7 +334,23 @@ async function fetchFromNumista(): Promise<CoinType[]> {
 
           if (res.ok) {
             const rawDetail: NumistaRawCoin = await res.json();
-            return assembleCoin(baseCoin, rawDetail);
+            const assembled = assembleCoin(baseCoin, rawDetail);
+
+            // Fetch issues (years, mintages, mint letters)
+            try {
+              const issuesRes = await fetch(`${NUMISTA_API_BASE}/types/${baseCoin.id}/issues?lang=en`, {
+                headers: { 'Numista-API-Key': NUMISTA_API_KEY },
+              });
+              if (issuesRes.ok) {
+                assembled.issues = await issuesRes.json();
+              } else if (issuesRes.status === 429) {
+                await delay(2000);
+              }
+            } catch (err) {
+              console.error(`[CoinService] Помилка завантаження issues для ${baseCoin.id}`);
+            }
+
+            return assembled;
           }
           break; // 404 etc
         } catch (err) {
@@ -348,11 +364,11 @@ async function fetchFromNumista(): Promise<CoinType[]> {
     const results = await Promise.all(promises);
     detailedCoins.push(...results);
     fetchedCount += results.length;
-    
+
     if (fetchedCount % 100 === 0 || fetchedCount === relevantCoins.length) {
-      console.log(`[CoinService] Завантажено деталей: ${fetchedCount} / ${relevantCoins.length} (${((fetchedCount/relevantCoins.length)*100).toFixed(1)}%)`);
+      console.log(`[CoinService] Завантажено деталей: ${fetchedCount} / ${relevantCoins.length} (${((fetchedCount / relevantCoins.length) * 100).toFixed(1)}%)`);
     }
-    
+
     await delay(300); // 300ms пауза між батчами
   }
 
