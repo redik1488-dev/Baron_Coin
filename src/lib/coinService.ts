@@ -12,45 +12,11 @@ import { getAdminDb } from './firebaseAdmin';
 import { CoinType, NumistaRawCoin, NumistaSearchResponse, Rarity } from '@/types/coin';
 
 const NUMISTA_API_BASE = 'https://api.numista.com/api/v3';
-const NUMISTA_API_KEY = 'Ch83szgfRoMbUDK1sG3iaF31C5rFCwbSM5pKaZnW';
+const NUMISTA_API_KEY = 'K4wnbBBwy4a4VuXpWZbbloWTmdz5HrMlpU7TX608'; // Ch83szgfRoMbUDK1sG3iaF31C5rFCwbSM5pKaZnW
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 днів
 
-const AH_ISSUERS = new Set(['autriche', 'autriche-habsbourg', 'hongrie', 'hungary']);
-
-const AH_QUERIES: Array<{ q: string; count: number }> = [
-  // === Австро-Угорська монархія (1792–1918) ===
-  { q: 'Francis II 1800', count: 50 },
-  { q: 'Franz II thaler', count: 50 },
-  { q: 'Francis II kreuzer', count: 50 },
-  { q: 'Ferdinand I 1840', count: 50 },
-  { q: 'Ferdinand I 1845', count: 50 },
-  { q: 'Franz Joseph florin', count: 50 },
-  { q: 'kreuzer Franz Joseph', count: 50 },
-  { q: 'corona Austria', count: 50 },
-  { q: 'heller Austria', count: 50 },
-  { q: 'filler Hungary', count: 50 },
-  { q: 'ducat Franz Joseph', count: 50 },
-  { q: '10 heller 1916', count: 50 },
-  { q: '20 heller 1916', count: 50 },
-  { q: 'Charles I filler', count: 50 },
-  // === Австрійська монархія Габсбургів (1526–1792) ===
-  { q: 'Maria Theresa thaler', count: 50 },
-  { q: 'Maria Theresa kreuzer', count: 50 },
-  { q: 'Leopold I Austria', count: 50 },
-  { q: 'Leopold I thaler', count: 50 },
-  { q: 'Charles VI Austria', count: 50 },
-  { q: 'Karl VI Austria', count: 50 },
-  { q: 'Joseph II Austria', count: 50 },
-  { q: 'Joseph II kreuzer', count: 50 },
-  { q: 'Leopold II Austria', count: 50 },
-  { q: 'Rudolf II Austria', count: 50 },
-  { q: 'Rudolf II thaler', count: 50 },
-  { q: 'Ferdinand I Habsburg', count: 50 },
-  { q: 'Maximilian II Austria', count: 50 },
-  { q: 'Ferdinand II Austria', count: 50 },
-  { q: 'Ferdinand III Austria', count: 50 },
-  { q: 'Joseph I Austria', count: 50 },
-];
+// Вилучаємо старі хардкодні квері, бо тепер ми тягнемо все через issuers
+const TARGET_ISSUERS = ['autriche-habsbourg', 'autriche', 'hongrie'];
 
 const COL_COINS = 'coins';
 const COL_CATALOG_META = 'coin_catalog_meta';
@@ -275,35 +241,34 @@ async function checkCache(): Promise<{ coinIds: string[]; coins?: CoinType[] } |
 // --- Numista API з пагінацією та нормалізацією ---
 
 async function fetchFromNumista(): Promise<CoinType[]> {
-  console.log('[CoinService] Початок завантаження бази з Numista API...');
-
+  console.log('[CoinService] Початок масового завантаження бази з Numista API (1526-1918)...');
   const allCoinsMap = new Map<string, CoinType>();
 
-  // Крок 1: базовий список
-  for (const { q, count } of AH_QUERIES) {
+  // Крок 1: базовий список для кожного емітента
+  for (const issuer of TARGET_ISSUERS) {
     let page = 1;
     let hasMore = true;
 
     while (hasMore) {
       try {
         const url = new URL(`${NUMISTA_API_BASE}/types`);
-        url.searchParams.set('q', q);
-        url.searchParams.set('count', String(count));
+        url.searchParams.set('issuer', issuer);
+        url.searchParams.set('count', '50');
         url.searchParams.set('page', String(page));
         url.searchParams.set('lang', 'en');
 
         const res = await fetch(url.toString(), {
           headers: { 'Numista-API-Key': NUMISTA_API_KEY },
-          signal: AbortSignal.timeout(15_000),
+          signal: AbortSignal.timeout(20_000),
         });
 
         if (res.status === 429) {
-          console.warn(`[CoinService] Rate limit (429). Чекаємо 5 сек...`);
+          console.warn(`[CoinService] Rate limit (429) на ${issuer}. Чекаємо 5 сек...`);
           await delay(5000);
           continue;
         }
         if (!res.ok) {
-          console.error(`[CoinService] HTTP ${res.status} для \"${q}\"`);
+          console.error(`[CoinService] HTTP ${res.status} для ${issuer}`);
           break;
         }
 
@@ -314,20 +279,12 @@ async function fetchFromNumista(): Promise<CoinType[]> {
 
         for (const raw of types) {
           const id = String(raw.id);
-          const issuerCode = (raw.issuer?.code || '').toLowerCase();
           const year = raw.min_year || 0;
-
-          const isAH = AH_ISSUERS.has(issuerCode) ||
-            issuerCode.includes('autriche') ||
-            issuerCode.includes('habsbourg') ||
-            issuerCode.includes('hongrie') ||
-            issuerCode.includes('hungary');
-
           const isCorrectPeriod = year >= 1526 && year <= 1918;
           const isCoinCategory = raw.category === 'coin';
 
-          if (!allCoinsMap.has(id) && isAH && isCorrectPeriod && isCoinCategory) {
-            // --- НОРМАЛІЗАЦІЯ ТУТ ---
+          // Якщо монета підходить, додаємо до загального списку
+          if (!allCoinsMap.has(id) && isCorrectPeriod && isCoinCategory) {
             const normalized = normalizeRawCoin(raw);
             allCoinsMap.set(id, {
               ...normalized,
@@ -337,57 +294,69 @@ async function fetchFromNumista(): Promise<CoinType[]> {
           }
         }
 
-        console.log(`[CoinService] "${q}" Сторінка ${page} завантажена. Значення: ${types.length}`);
+        console.log(`[CoinService] [${issuer}] Сторінка ${page} завантажена. Знайдено нових монет: ${types.length}`);
         page++;
-        await delay(1000);
+        await delay(250); // Легка затримка щоб не дратувати API
 
       } catch (err) {
-        console.error(`[CoinService] Помилка запиту "${q}" сторінка ${page}:`, err);
+        console.error(`[CoinService] Помилка запиту [${issuer}] сторінка ${page}:`, err);
         break;
       }
     }
   }
 
-  const baseCoins = Array.from(allCoinsMap.values());
-  console.log(`[CoinService] Зібрано ${baseCoins.length} монет. Починаю завантаження деталей...`);
+  // Відкидаємо ті, де рік не визначився або не збігся з правителями
+  const relevantCoins = Array.from(allCoinsMap.values()).filter(c => c.ruler && c.ruler !== 'Інші / Невідомо');
+  console.log(`[CoinService] Зібрано ${relevantCoins.length} цільових монет. Починаю швидке завантаження деталей...`);
 
-  // Крок 2: деталі (метал, вага, розмір)
+  // Крок 2: деталі (метал, вага, розмір) з паралельними запитами
   const detailedCoins: CoinType[] = [];
   let fetchedCount = 0;
+  
+  // Обробляємо по 5 монет одночасно (щоб обійти швидке завантаження без 429)
+  const CONCURRENCY = 5;
+  
+  for (let i = 0; i < relevantCoins.length; i += CONCURRENCY) {
+    const chunk = relevantCoins.slice(i, i + CONCURRENCY);
+    const promises = chunk.map(async (baseCoin) => {
+      let retryCount = 0;
+      while (retryCount < 3) {
+        try {
+          const res = await fetch(`${NUMISTA_API_BASE}/types/${baseCoin.id}?lang=en`, {
+            headers: { 'Numista-API-Key': NUMISTA_API_KEY },
+          });
 
-  for (const baseCoin of baseCoins) {
-    try {
-      const res = await fetch(`${NUMISTA_API_BASE}/types/${baseCoin.id}?lang=en`, {
-        headers: { 'Numista-API-Key': NUMISTA_API_KEY },
-      });
+          if (res.status === 429) {
+            await delay(3000 + Math.random() * 2000); // Backoff
+            retryCount++;
+            continue;
+          }
 
-      if (res.status === 429) {
-        console.warn(`[CoinService] Rate limit при деталях ID ${baseCoin.id}. Чекаємо 5 сек...`);
-        await delay(5000);
-        detailedCoins.push(baseCoin);
-        continue;
-      }
-
-      if (res.ok) {
-        const rawDetail: NumistaRawCoin = await res.json();
-        // assembleCoin нормалізує detail і мерджить з baseCoin
-        detailedCoins.push(assembleCoin(baseCoin, rawDetail));
-        fetchedCount++;
-        if (fetchedCount % 10 === 0) {
-          console.log(`[CoinService] Завантажено деталей: ${fetchedCount} / ${baseCoins.length}`);
+          if (res.ok) {
+            const rawDetail: NumistaRawCoin = await res.json();
+            return assembleCoin(baseCoin, rawDetail);
+          }
+          break; // 404 etc
+        } catch (err) {
+          await delay(2000);
+          retryCount++;
         }
-      } else {
-        detailedCoins.push(baseCoin);
       }
+      return baseCoin; // Якщо не вдалося, повертаємо хоча б базову інфу
+    });
 
-      await delay(1000);
-    } catch (err) {
-      console.error(`[CoinService] Помилка деталей ID ${baseCoin.id}:`, err);
-      detailedCoins.push(baseCoin);
+    const results = await Promise.all(promises);
+    detailedCoins.push(...results);
+    fetchedCount += results.length;
+    
+    if (fetchedCount % 100 === 0 || fetchedCount === relevantCoins.length) {
+      console.log(`[CoinService] Завантажено деталей: ${fetchedCount} / ${relevantCoins.length} (${((fetchedCount/relevantCoins.length)*100).toFixed(1)}%)`);
     }
+    
+    await delay(300); // 300ms пауза між батчами
   }
 
-  console.log(`[CoinService] Деталі успішно завантажені!`);
+  console.log(`[CoinService] ✅ Всі деталі успішно завантажені! Всього монет: ${detailedCoins.length}`);
   return detailedCoins;
 }
 
