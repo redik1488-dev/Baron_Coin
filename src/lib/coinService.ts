@@ -87,7 +87,7 @@ function determineRuler(year: number, title: string): string {
   const t = title.toLowerCase();
 
   // === Австро-Угорська монархія ===
-  if (t.includes('karl i') || t.includes('charles i') || (year >= 1916 && year <= 1918)) {
+  if (t.match(/\bkarl i\b|\bcharles i\b/) || (year >= 1916 && year <= 1918)) {
     return 'Карл I (1916–1918)';
   }
   if (t.includes('franz joseph') || t.includes('francis joseph') || (year >= 1848 && year <= 1916)) {
@@ -110,7 +110,7 @@ function determineRuler(year: number, title: string): string {
   if (t.includes('maria theresa') || t.includes('maria theresia') || (year >= 1740 && year < 1780)) {
     return 'Марія Терезія (1740–1780)';
   }
-  if (t.includes('charles vi') || t.includes('karl vi') || (year >= 1711 && year < 1740)) {
+  if (t.match(/\bcharles vi\b|\bkarl vi\b|\bcharles iii\b|\bkarl iii\b/) || (year >= 1711 && year < 1740)) {
     return 'Карл VI (1711–1740)';
   }
   if (t.includes('joseph i') || (year >= 1705 && year < 1711)) {
@@ -134,7 +134,7 @@ function determineRuler(year: number, title: string): string {
   if (t.includes('maximilian') || (year >= 1564 && year < 1576)) {
     return 'Максиміліан II (1564–1576)';
   }
-  if (t.includes('ferdinand i') || (year >= 1526 && year < 1564)) {
+  if (t.match(/\bferdinand i\b/) || (year >= 1526 && year < 1564)) {
     return 'Фердинанд I Габсбург (1526–1564)';
   }
   return 'Інші / Невідомо';

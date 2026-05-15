@@ -137,20 +137,10 @@ export default function CoinModal({ coin, onClose }: CoinModalProps & { lang?: '
           </div>
 
           {/* Extra info row */}
-          {(coin.shape || coin.edge) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {coin.shape && (
-                <div className="bg-white/60 p-4 rounded-xl border border-amber-100 text-center">
-                  <p className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter mb-1">Форма</p>
-                  <p className="text-sm font-semibold text-stone-700">{coin.shape}</p>
-                </div>
-              )}
-              {coin.edge && (
-                <div className="bg-white/60 p-4 rounded-xl border border-amber-100 text-center">
-                  <p className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter mb-1">Гурт</p>
-                  <p className="text-sm font-semibold text-stone-700">{coin.edge}</p>
-                </div>
-              )}
+          {coin.edge && (
+            <div className="bg-white/60 p-4 rounded-xl border border-amber-100 text-center">
+              <p className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter mb-1">Гурт</p>
+              <p className="text-sm font-semibold text-stone-700">{coin.edge}</p>
             </div>
           )}
 
