@@ -127,18 +127,22 @@ export default function CoinGrid({ coins, lang }: CoinGridProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMetal, setSelectedMetal] = useState<'all' | 'gold' | 'silver' | 'copper'>('all');
 
+  const coinsWithImages = useMemo(() => {
+    return coins.filter(c => c.image?.obverse || c.image?.reverse || c.obverse_thumbnail || c.reverse_thumbnail);
+  }, [coins]);
+
   const rulerCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    coins.forEach(c => {
+    coinsWithImages.forEach(c => {
       if (c.ruler) counts[c.ruler] = (counts[c.ruler] || 0) + 1;
     });
     return counts;
-  }, [coins]);
+  }, [coinsWithImages]);
 
   const groupedAndFilteredCoins = useMemo(() => {
     if (!selectedRuler) return {};
 
-    let result = coins.filter(c => c.ruler === selectedRuler);
+    let result = coinsWithImages.filter(c => c.ruler === selectedRuler);
 
     if (selectedMetal !== 'all') {
       result = result.filter(c => {
@@ -146,7 +150,7 @@ export default function CoinGrid({ coins, lang }: CoinGridProps) {
         if (selectedMetal === 'gold') return comp.includes('gold') || comp.includes('or ') || comp === 'or';
         if (selectedMetal === 'silver') return comp.includes('silver') || comp.includes('argent') || comp.includes('billon');
         if (selectedMetal === 'copper') return comp.includes('copper') || comp.includes('cuivre') || comp.includes('bronze') || comp.includes('brass');
-        return true;
+        return false;
       });
     }
 
@@ -175,7 +179,7 @@ export default function CoinGrid({ coins, lang }: CoinGridProps) {
     }
 
     return groups;
-  }, [coins, selectedRuler, searchQuery]);
+  }, [coinsWithImages, selectedRuler, searchQuery, selectedMetal]);
 
 
 
