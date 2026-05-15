@@ -17,25 +17,26 @@ let memCache: MemCache | null = null;
 const MEM_TTL_MS = 30 * 60 * 1000; // 30 хвилин
 
 export async function GET(req: NextRequest) {
-  const shouldRefresh = req.nextUrl.searchParams.get('refresh') === 'true';
-
   try {
     let coins: CoinType[];
     let source: 'cache' | 'api';
 
-    if (!shouldRefresh && memCache && Date.now() - memCache.fetchedAt < MEM_TTL_MS) {
+    if (memCache && Date.now() - memCache.fetchedAt < MEM_TTL_MS) {
       // ⚡ Миттєво з пам'яті
       console.log(`[API /coins] ⚡ In-memory cache hit (${memCache.coins.length} монет).`);
       coins = memCache.coins;
       source = memCache.source;
-    } else if (shouldRefresh) {
-      coins = await CoinService.refreshCache();
-      source = 'api';
-      memCache = { coins, source, fetchedAt: Date.now() };
     } else {
+      // 🐌 Звернення до Firestore (чисто читання бази)
+      console.log(`[API /coins] 🐌 Отримання з Firestore...`);
       coins = await CoinService.getCatalog();
       source = 'cache';
-      memCache = { coins, source, fetchedAt: Date.now() };
+
+      memCache = {
+        coins,
+        source,
+        fetchedAt: Date.now(),
+      };
     }
 
     return NextResponse.json({

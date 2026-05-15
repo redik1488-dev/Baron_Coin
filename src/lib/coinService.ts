@@ -397,14 +397,8 @@ export class CoinService {
       }
     }
 
-
-    const coins = await fetchFromNumista();
-    if (coins.length > 0) {
-      await saveCatalogToFirestore(coins).catch(err =>
-        console.error('[CoinService] Помилка збереження в Firestore:', err)
-      );
-    }
-    return coins;
+    console.warn('[CoinService] Кеш Firestore порожній! Автоматичне оновлення через API вимкнено для захисту лімітів.');
+    return []; // Повертаємо пусто, не спамимо Numista API
   }
 
   static async refreshCache(): Promise<CoinType[]> {
