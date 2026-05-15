@@ -8,6 +8,7 @@ import CoinModal from './CoinModal';
 
 interface CoinGridProps {
   coins: CoinType[];
+  lang: 'AT' | 'EN' | 'UK';
 }
 
 interface RulerDef {
@@ -94,7 +95,7 @@ function parseNominalValue(title: string): number {
   return 0;
 }
 
-export default function CoinGrid({ coins }: CoinGridProps) {
+export default function CoinGrid({ coins, lang }: CoinGridProps) {
   const [selectedRuler, setSelectedRuler] = useState<string | null>(null);
   const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -163,7 +164,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
             )}
             {!isLocked && (
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-800 text-amber-100 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400 shadow-md whitespace-nowrap">
-                {count} монет
+                {count} {lang === 'AT' ? 'Münzen' : lang === 'EN' ? 'coins' : 'монет'}
               </div>
             )}
           </div>
@@ -180,11 +181,15 @@ export default function CoinGrid({ coins }: CoinGridProps) {
         {/* === Австрійська монархія Габсбургів === */}
         <section>
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 mb-1">Österreich</p>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 mb-1">
+              {lang === 'AT' ? 'Österreich' : lang === 'EN' ? 'Austria' : 'Австрія'}
+            </p>
             <h2 className="text-2xl md:text-3xl font-cinzel text-amber-900 uppercase tracking-widest font-bold">
-              Austrian Monarchy
+              {lang === 'AT' ? 'Habsburgermonarchie' : lang === 'EN' ? 'Habsburg Monarchy' : 'Австрійська Монархія'}
             </h2>
-            <p className="text-stone-500 text-sm mt-1">Habsburg Archdukes & Holy Roman Emperors</p>
+            <p className="text-stone-500 text-sm mt-1">
+              {lang === 'AT' ? 'Erzherzöge & Römisch-Deutsche Kaiser' : lang === 'EN' ? 'Habsburg Archdukes & Holy Roman Emperors' : 'Ерцгерцоги та Імператори Священної Римської імперії'}
+            </p>
             <div className="h-px w-48 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-4" />
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6 max-w-5xl mx-auto">
@@ -195,11 +200,15 @@ export default function CoinGrid({ coins }: CoinGridProps) {
         {/* === Австро-Угорська монархія === */}
         <section>
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 mb-1">Österreich-Ungarn</p>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 mb-1">
+              {lang === 'AT' ? 'Österreich-Ungarn' : lang === 'EN' ? 'Austria-Hungary' : 'Австро-Угорщина'}
+            </p>
             <h2 className="text-2xl md:text-3xl font-cinzel text-amber-900 uppercase tracking-widest font-bold">
-              Austro-Hungarian Empire
+              {lang === 'AT' ? 'Österreichisch-Ungarische Monarchie' : lang === 'EN' ? 'Austro-Hungarian Empire' : 'Австро-Угорська Імперія'}
             </h2>
-            <p className="text-stone-500 text-sm mt-1">Emperors of Austria & Kings of Hungary</p>
+            <p className="text-stone-500 text-sm mt-1">
+              {lang === 'AT' ? 'Kaiser von Österreich & Könige von Ungarn' : lang === 'EN' ? 'Emperors of Austria & Kings of Hungary' : 'Імператори Австрії та Королі Угорщини'}
+            </p>
             <div className="h-px w-48 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-4" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
@@ -239,7 +248,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
         <div className="relative flex-1">
           <input
             type="text"
-            placeholder="Пошук (напр. 10 Heller)..."
+            placeholder={lang === 'AT' ? 'Suche (z.B. 10 Heller)...' : lang === 'EN' ? 'Search (e.g. 10 Heller)...' : 'Пошук (напр. 10 Heller)...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-3 rounded-xl border border-stone-200 shadow-sm
@@ -249,7 +258,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
         </div>
         <div className="bg-amber-100 text-amber-900 px-4 py-3 rounded-xl font-medium text-sm border border-amber-200 shadow-sm whitespace-nowrap">
-          Всього: {totalCoins}
+          {lang === 'AT' ? 'Gesamt: ' : lang === 'EN' ? 'Total: ' : 'Всього: '} {totalCoins}
         </div>
       </div>
 
@@ -257,7 +266,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
       <div className="space-y-8">
         {groupKeys.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center text-stone-400 shadow-sm border border-stone-200">
-            <p>Монет не знайдено</p>
+            <p>{lang === 'AT' ? 'Keine Münzen gefunden' : lang === 'EN' ? 'No coins found' : 'Монет не знайдено'}</p>
           </div>
         ) : (
           groupKeys.map(currency => (
@@ -306,7 +315,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
                           {coin.title}
                         </h4>
                         <p className="text-sm text-stone-500 truncate">
-                          <span className="font-medium text-stone-600">{coin.composition || 'Невідомий метал'}</span>
+                          <span className="font-medium text-stone-600">{coin.composition || (lang === 'AT' ? 'Unbekanntes Metall' : lang === 'EN' ? 'Unknown metal' : 'Невідомий метал')}</span>
                           {' • '}
                           {coin.min_year}
                           {coin.max_year && coin.max_year !== coin.min_year ? ` - ${coin.max_year}` : ''}
@@ -322,12 +331,13 @@ export default function CoinGrid({ coins }: CoinGridProps) {
                           coin.rarity === 'uncommon' ? 'bg-sky-50 text-sky-700 border-sky-300' :
                           'bg-stone-100 text-stone-500 border-stone-200'
                         }`}>
-                          {coin.rarity === 'unique' ? 'Унікальна' :
-                            coin.rarity === 'very_rare' ? 'Дуже Рідкісна' :
-                              coin.rarity === 'rare' ? 'Рідкісна' :
-                                coin.rarity === 'uncommon' ? 'Нечаста' : 'Часта'}
+                          {coin.rarity === 'unique' ? (lang === 'AT' ? 'Unikat' : lang === 'EN' ? 'Unique' : 'Унікальна') :
+                            coin.rarity === 'very_rare' ? (lang === 'AT' ? 'Sehr selten' : lang === 'EN' ? 'Very Rare' : 'Дуже Рідкісна') :
+                              coin.rarity === 'rare' ? (lang === 'AT' ? 'Selten' : lang === 'EN' ? 'Rare' : 'Рідкісна') :
+                                coin.rarity === 'uncommon' ? (lang === 'AT' ? 'Ungewöhnlich' : lang === 'EN' ? 'Uncommon' : 'Нечаста') : 
+                                (lang === 'AT' ? 'Häufig' : lang === 'EN' ? 'Common' : 'Часта')}
                         </div>
-                        {coin.weight && <div className="text-xs text-stone-400">{coin.weight} г</div>}
+                        {coin.weight && <div className="text-xs text-stone-400">{coin.weight} {lang === 'EN' ? 'g' : 'г'}</div>}
                       </div>
                     </div>
                   );
