@@ -58,6 +58,30 @@ function extractCurrency(title: string): string {
   return 'Інше';
 }
 
+const CURRENCY_ORDER = [
+  'Pfennig',
+  'Heller',
+  'Filler',
+  'Kreuzer',
+  'Corona / Krone',
+  'Forint',
+  'Florin',
+  'Gulden',
+  'Thaler',
+  'Ducat',
+  'Sovrano',
+  'Інше'
+];
+
+function sortCurrencies(a: string, b: string) {
+  let idxA = CURRENCY_ORDER.indexOf(a);
+  let idxB = CURRENCY_ORDER.indexOf(b);
+  if (idxA === -1) idxA = 999;
+  if (idxB === -1) idxB = 999;
+  if (idxA !== idxB) return idxA - idxB;
+  return a.localeCompare(b);
+}
+
 function parseNominalValue(title: string): number {
   const matchFraction = title.match(/^(\d+)\/(\d+)/);
   if (matchFraction) {
@@ -121,7 +145,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
 
     let text = `Продаж монет епохи: ${selectedRuler}\n\n`;
     const groups = groupedAndFilteredCoins;
-    const sortedKeys = Object.keys(groups).sort();
+    const sortedKeys = Object.keys(groups).sort(sortCurrencies);
 
     sortedKeys.forEach(currency => {
       text += `=== ${currency.toUpperCase()} ===\n`;
@@ -210,7 +234,7 @@ export default function CoinGrid({ coins }: CoinGridProps) {
 
   const activeRuler = ALL_RULERS.find(r => r.id === selectedRuler);
 
-  const groupKeys = Object.keys(groupedAndFilteredCoins).sort();
+  const groupKeys = Object.keys(groupedAndFilteredCoins).sort(sortCurrencies);
   const totalCoins = groupKeys.reduce((acc, key) => acc + groupedAndFilteredCoins[key].length, 0);
 
   return (
